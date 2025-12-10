@@ -1,0 +1,297 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<section class="hero-sakura">
+    <div class="container">
+        <div class="text-center">
+            <h1 class="hero-title">Sakura Media</h1>
+            <p class="hero-subtitle">Відкрийте для себе світ захоплюючих фільмів, серіалів та аніме в унікальному українському стилі</p>
+            <div class="mt-5">
+                <a href="{% url 'media_list' %}?type=movie" class="btn btn-sakura-primary me-2 mb-2">Фільми</a>
+                <a href="{% url 'media_list' %}?type=series" class="btn btn-sakura-primary me-2 mb-2">Серіали</a>
+                <a href="{% url 'media_list' %}?type=anime" class="btn btn-sakura-primary me-2 mb-2">Аніме</a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="search-hero">
+    <div class="container">
+        <div class="text-center mb-5">
+            <h2 class="search-title">Знайдіть улюблений контент</h2>
+            <p class="text-sakura-deep opacity-75 mb-4">Шукайте серед тисяч фільмів, серіалів та аніме</p>
+        </div>
+        <div class="search-form-sakura">
+            <form method="GET" action="{% url 'search' %}">
+                <div class="input-group">
+                    <input type="text" name="q" class="form-control search-input-sakura" 
+                           placeholder="Введіть назву фільму, серіалу чи аніме..." 
+                           value="{{ query }}">
+                    <button type="submit" class="btn search-button-sakura">
+                        Пошук
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</section>
+
+<section class="py-5">
+    <div class="container">
+        <div class="section-header mb-5">
+            <h2>Оберіть категорію</h2>
+        </div>
+        <div class="row g-4">
+            <div class="col-md-4">
+                <a href="{% url 'media_list' %}?type=movie" class="text-decoration-none">
+                    <div class="card-sakura text-center p-5 h-100">
+                        <div class="mb-4">
+                            <div class="display-1 text-sakura-rose">🎬</div>
+                        </div>
+                        <h3 class="text-sakura-deep mb-3">Фільми</h3>
+                        <p class="text-sakura-deep opacity-75">Від класики до новинок кінематографу</p>
+                    </div>
+                </a>
+            </div>
+            <div class="col-md-4">
+                <a href="{% url 'media_list' %}?type=series" class="text-decoration-none">
+                    <div class="card-sakura text-center p-5 h-100">
+                        <div class="mb-4">
+                            <div class="display-1 text-sakura-rose">📺</div>
+                        </div>
+                        <h3 class="text-sakura-deep mb-3">Серіали</h3>
+                        <p class="text-sakura-deep opacity-75">Захоплюючі серіали на будь-який смак</p>
+                    </div>
+                </a>
+            </div>
+            <div class="col-md-4">
+                <a href="{% url 'media_list' %}?type=anime" class="text-decoration-none">
+                    <div class="card-sakura text-center p-5 h-100">
+                        <div class="mb-4">
+                            <div class="display-1 text-sakura-rose">🌸</div>
+                        </div>
+                        <h3 class="text-sakura-deep mb-3">Аніме</h3>
+                        <p class="text-sakura-deep opacity-75">Японська анімація для справжніх поціновувачів</p>
+                    </div>
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+
+{% if latest_movies %}
+<section class="py-5 bg-gradient-sakura">
+    <div class="container">
+        <div class="section-header mb-5">
+            <h2>Нові фільми</h2>
+        </div>
+        <div class="row g-4">
+            {% for movie in latest_movies %}
+            <div class="col-lg-3 col-md-4 col-sm-6">
+                <a href="{% url 'media_detail' movie.pk %}" class="card-link text-decoration-none">
+                    <div class="card-sakura h-100">
+                        <div class="position-relative">
+                            {% if movie.poster %}
+                            <img src="{{ movie.poster.url }}" class="card-img-top" alt="{{ movie.title }}" style="height: 320px; object-fit: cover;">
+                            {% else %}
+                            <div class="bg-sakura-light d-flex align-items-center justify-content-center" style="height: 320px;">
+                                <span class="text-sakura-rose display-1">🎬</span>
+                            </div>
+                            {% endif %}
+                            <div class="position-absolute top-0 end-0 m-2">
+                                <span class="badge-sakura">Фільм</span>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <h5 class="text-sakura-deep mb-2">{{ movie.title }}</h5>
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <small class="text-sakura-rose">{{ movie.release_year }}</small>
+                                <div class="d-inline-flex align-items-center gap-1">
+                                    <div class="star-rating-detailed" data-rating="{{ movie.average_rating|default:0 }}">
+                                        <span class="star">★</span>
+                                        <span class="star">★</span>
+                                        <span class="star">★</span>
+                                        <span class="star">★</span>
+                                        <span class="star">★</span>
+                                    </div>
+                                    <small class="text-sakura-deep fw-semibold">{{ movie.average_rating|default:0|floatformat:1 }}</small>
+                                </div>
+                            </div>
+                            <p class="text-sakura-deep opacity-75 small mb-0">{{ movie.genres.all|slice:":2"|join:", " }}</p>
+                        </div>
+                    </div>
+                </a>
+            </div>
+            {% endfor %}
+        </div>
+        <div class="text-center mt-4">
+            <a href="{% url 'media_list' %}?type=movie" class="btn btn-sakura-ghost">Всі фільми</a>
+        </div>
+    </div>
+</section>
+{% endif %}
+
+{% if latest_series %}
+<section class="py-5">
+    <div class="container">
+        <div class="section-header mb-5">
+            <h2>Нові серіали</h2>
+        </div>
+        <div class="row g-4">
+            {% for series in latest_series %}
+            <div class="col-lg-3 col-md-4 col-sm-6">
+                <a href="{% url 'media_detail' series.pk %}" class="card-link text-decoration-none">
+                    <div class="card-sakura h-100">
+                        <div class="position-relative">
+                            {% if series.poster %}
+                            <img src="{{ series.poster.url }}" class="card-img-top" alt="{{ series.title }}" style="height: 300px; object-fit: cover;">
+                            {% else %}
+                            <div class="bg-sakura-light d-flex align-items-center justify-content-center" style="height: 300px;">
+                                <span class="text-sakura-rose display-1">📺</span>
+                            </div>
+                            {% endif %}
+                            <div class="position-absolute top-0 end-0 m-2">
+                                <span class="badge-sakura">Серіал</span>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <h5 class="text-sakura-deep mb-2">{{ series.title }}</h5>
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <small class="text-sakura-rose">{{ series.release_year }}</small>
+                                <div class="d-inline-flex align-items-center gap-1">
+                                    <div class="star-rating-detailed" data-rating="{{ series.average_rating|default:0 }}">
+                                        <span class="star">★</span>
+                                        <span class="star">★</span>
+                                        <span class="star">★</span>
+                                        <span class="star">★</span>
+                                        <span class="star">★</span>
+                                    </div>
+                                    <small class="text-sakura-deep fw-semibold">{{ series.average_rating|default:0|floatformat:1 }}</small>
+                                </div>
+                            </div>
+                            <p class="text-sakura-deep opacity-75 small mb-0">{{ series.genres.all|slice:":2"|join:", " }}</p>
+                        </div>
+                    </div>
+                </a>
+            </div>
+            {% endfor %}
+        </div>
+        <div class="text-center mt-4">
+            <a href="{% url 'media_list' %}?type=series" class="btn btn-sakura-ghost">Всі серіали</a>
+        </div>
+    </div>
+</section>
+{% endif %}
+
+{% if latest_anime %}
+<section class="py-5 bg-gradient-sakura">
+    <div class="container">
+        <div class="section-header mb-5">
+            <h2>Нове аніме</h2>
+        </div>
+        <div class="row g-4">
+            {% for anime in latest_anime %}
+            <div class="col-lg-3 col-md-4 col-sm-6">
+                <a href="{% url 'media_detail' anime.pk %}" class="card-link text-decoration-none">
+                    <div class="card-sakura h-100">
+                        <div class="position-relative">
+                            {% if anime.poster %}
+                            <img src="{{ anime.poster.url }}" class="card-img-top" alt="{{ anime.title }}" style="height: 300px; object-fit: cover;">
+                            {% else %}
+                            <div class="bg-sakura-light d-flex align-items-center justify-content-center" style="height: 300px;">
+                                <span class="text-sakura-rose display-1">🌸</span>
+                            </div>
+                            {% endif %}
+                            <div class="position-absolute top-0 end-0 m-2">
+                                <span class="badge-sakura">Аніме</span>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <h5 class="text-sakura-deep mb-2">{{ anime.title }}</h5>
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <small class="text-sakura-rose">{{ anime.release_year }}</small>
+                                <div class="d-inline-flex align-items-center gap-1">
+                                    <div class="star-rating-detailed" data-rating="{{ anime.average_rating|default:0 }}">
+                                        <span class="star">★</span>
+                                        <span class="star">★</span>
+                                        <span class="star">★</span>
+                                        <span class="star">★</span>
+                                        <span class="star">★</span>
+                                    </div>
+                                    <small class="text-sakura-deep fw-semibold">{{ anime.average_rating|default:0|floatformat:1 }}</small>
+                                </div>
+                            </div>
+                            <p class="text-sakura-deep opacity-75 small mb-0">{{ anime.genres.all|slice:":2"|join:", " }}</p>
+                        </div>
+                    </div>
+                </a>
+            </div>
+            {% endfor %}
+        </div>
+        <div class="text-center mt-4">
+            <a href="{% url 'media_list' %}?type=anime" class="btn btn-sakura-ghost">Всі аніме</a>
+        </div>
+    </div>
+</section>
+{% endif %}
+
+<section class="py-5">
+    <div class="container">
+        <div class="row g-4 text-center">
+            <div class="col-md-3">
+                <div class="glass-card py-4">
+                    <div class="text-sakura-gold mb-2" style="font-size: 2.5rem;">🎬</div>
+                    <h3 class="text-sakura-deep">{{ movie_count }}</h3>
+                    <p class="text-sakura-deep opacity-75 mb-0">Фільмів</p>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="glass-card py-4">
+                    <div class="text-sakura-gold mb-2" style="font-size: 2.5rem;">📺</div>
+                    <h3 class="text-sakura-deep">{{ series_count }}</h3>
+                    <p class="text-sakura-deep opacity-75 mb-0">Серіалів</p>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="glass-card py-4">
+                    <div class="text-sakura-gold mb-2" style="font-size: 2.5rem;">🌸</div>
+                    <h3 class="text-sakura-deep">{{ anime_count }}</h3>
+                    <p class="text-sakura-deep opacity-75 mb-0">Аніме</p>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="glass-card py-4">
+                    <div class="text-sakura-gold mb-2" style="font-size: 2.5rem;">⭐</div>
+                    <h3 class="text-sakura-deep">{{ rating_count }}</h3>
+                    <p class="text-sakura-deep opacity-75 mb-0">Оцінок</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+
+{% block extra_css %}
+<style>
+    .card-link,
+    .card-link:hover,
+    .card-link:focus,
+    .card-link:active {
+        text-decoration: none !important;
+        color: inherit !important;
+    }
+    
+    .card-sakura a,
+    .card-sakura a:hover,
+    .card-sakura a:focus {
+        text-decoration: none !important;
+        color: inherit !important;
+    }
+</style>
+{% endblock %}
+{% endblock %}
+
+{% block extra_js %}
+{% load static %}
+<script src="{% static 'js/star_rating.js' %}"></script>
+{% endblock %}

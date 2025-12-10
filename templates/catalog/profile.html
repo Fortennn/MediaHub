@@ -1,0 +1,141 @@
+﻿{% extends 'base.html' %}
+{% load widget_tweaks %}
+
+{% block title %}Профіль | Sakura Media{% endblock %}
+
+{% block content %}
+<section class="auth-hero text-center" style="padding-top: 2rem; padding-bottom: 2rem;">
+    <div class="container">
+        <h1 class="search-title mb-0">Профіль</h1>
+    </div>
+</section>
+
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-6"> 
+            <div class="login-form-sakura p-4 p-md-4 position-relative">
+                <div class="d-flex flex-column align-items-center mb-4">
+                    <div class="avatar-circle profile-avatar sakura-avatar-frame flex-shrink-0 card-click mb-3"
+                         id="avatar-click-trigger"
+                         style="width: 100px; height: 100px; cursor: pointer;">
+                        {% if profile.avatar %}
+                            <img src="{{ profile.avatar.url }}" alt="{{ user.username }}" class="avatar-img">
+                        {% else %}
+                            <span class="text-sakura-deep fw-bold fs-2">{{ user.username|first|upper }}</span>
+                        {% endif %}
+                    </div>
+                    <h2 class="auth-title mb-1">{{ user.username }}</h2>
+                    <p class="text-sakura-deep opacity-75 mb-0">З нами від {{ user.date_joined|date:"d.m.Y" }}</p>
+                </div>
+
+                <form method="POST" enctype="multipart/form-data" id="avatar-form" style="display: none;">
+                    {% csrf_token %}
+                    {{ profile_form.avatar|add_class:"form-control" }}
+                </form>
+
+                <div class="row g-3 mb-4 text-center">
+                    <div class="col-sm-6">
+                        <div class="stat-card h-100">
+                            <p class="stat-label mb-1">Список перегляду</p>
+                            <h3 class="stat-number mb-1">{{ watchlist_count }}</h3>
+                            <p class="stat-sub small">всього додано</p>
+                        </div>
+                    </div>
+                    <div class="col-sm-6">
+                        <div class="stat-card h-100">
+                            <p class="stat-label mb-1">Оцінки</p>
+                            <h3 class="stat-number mb-1">{{ rating_count }}</h3>
+                            <p class="stat-sub small">залишено оцінок</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="d-grid gap-3 mb-4">
+                    <a class="btn btn-sakura-primary" href="{% url 'user_watchlist' %}">
+                        <i class="bi bi-bookmark-fill me-2"></i> Мій список перегляду
+                    </a>
+                    <a class="btn btn-sakura-soft" href="{% url 'user_comments' %}">
+                        <i class="bi bi-chat-text-fill me-2"></i> Мої коментарі
+                    </a>
+                    {% if user.is_staff or user.is_superuser %}
+                    <a class="btn btn-sakura-soft" href="{% url 'admin:index' %}">
+                        <i class="bi bi-gear-fill me-2"></i> Адмін-панель
+                    </a>
+                    {% endif %}
+                </div>
+
+                <div class="border-top border-sakura-soft pt-4">
+                    <h4 class="text-sakura-deep mb-3">Остання активність</h4>
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <h6 class="content-card__eyebrow text-start mb-2">Недавні у списку: 
+                                <a class="text-sakura-rose text-decoration-none small ms-2" href="{% url 'user_watchlist' %}">Увесь список</a>
+                            </h6>
+                            {% if latest_watchlist %}
+                            <div class="mini-grid">
+                                {% for item in latest_watchlist|slice:":2" %}
+                                <a class="mini-card" href="{% url 'media_detail' item.media_item.pk %}">
+                                    <div class="mini-card__title">{{ item.media_item.title|truncatechars:25 }}</div>
+                                    <div class="mini-card__meta">
+                                        <span class="pill">{{ item.media_item.release_year }}</span>
+                                    </div>
+                                </a>
+                                {% endfor %}
+                            </div>
+                            {% else %}
+                            <p class="mb-0 text-sakura-deep opacity-75">Поки порожньо.</p>
+                            {% endif %}
+                        </div>
+
+                        <div class="col-md-6">
+                            <h6 class="content-card__eyebrow text-start mb-2">Недавні оцінки: 
+                                <a class="text-sakura-rose text-decoration-none small ms-2" href="{% url 'user_comments' %}">Всі коментарі</a>
+                            </h6>
+                            {% if recent_ratings %}
+                            <div class="mini-grid">
+                                {% for rating in recent_ratings|slice:":2" %}
+                                <a class="mini-card" href="{% url 'media_detail' rating.media_item.pk %}">
+                                    <div class="mini-card__title">{{ rating.media_item.title|truncatechars:25 }}</div>
+                                    <div class="mini-card__meta">
+                                        <span class="pill">Оцінка {{ rating.score }}/10</span>
+                                    </div>
+                                </a>
+                                {% endfor %}
+                            </div>
+                            {% else %}
+                            <p class="mb-0 text-sakura-deep opacity-75">Ще немає оцінок.</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+{{ block.super }}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const avatarTrigger = document.getElementById('avatar-click-trigger');
+        const avatarForm = document.getElementById('avatar-form');
+        const avatarInput = avatarForm ? avatarForm.querySelector('input[type="file"]') : null;
+
+        if (avatarTrigger && avatarInput) {
+            avatarTrigger.addEventListener('click', function(e) {
+                e.preventDefault();
+                avatarInput.click();
+            });
+        }
+        if (avatarInput) {
+            avatarInput.addEventListener('change', function() {
+                if (this.files.length > 0) {
+                    avatarForm.submit();
+                }
+            });
+        }
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,63 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<section class="auth-hero">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-6 col-md-8">
+                <div class="auth-card p-5">
+                    <div class="text-center mb-5">
+                        <a href="{% url 'home' %}" class="auth-logo text-decoration-none">Sakura Media</a>
+                        <h1 class="auth-title mt-3">Створення акаунта</h1>
+                        <p class="text-sakura-deep opacity-75">Приєднуйтесь до нашої спільноти</p>
+                    </div>
+                    
+                    <form method="POST">
+                        {% csrf_token %}
+                        
+                        {% if form.errors %}
+                        <div class="alert alert-sakura mb-4">
+                            {% for field, errors in form.errors.items %}
+                                {% for error in errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                        
+                        <div class="mb-4">
+                            <label class="form-label text-sakura-deep mb-2">Ім'я користувача</label>
+                            <input type="text" name="username" class="form-control input-auth" required>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <label class="form-label text-sakura-deep mb-2">Електронна пошта</label>
+                            <input type="email" name="email" class="form-control input-auth">
+                        </div>
+                        
+                        <div class="mb-4">
+                            <label class="form-label text-sakura-deep mb-2">Пароль</label>
+                            <input type="password" name="password1" class="form-control input-auth" required>
+                            <small class="text-sakura-rose opacity-75">Мінімум 8 символів</small>
+                        </div>
+                        
+                        <div class="mb-5">
+                            <label class="form-label text-sakura-deep mb-2">Підтвердження пароля</label>
+                            <input type="password" name="password2" class="form-control input-auth" required>
+                        </div>
+                        
+                        <button type="submit" class="auth-button mb-4">Зареєструватися</button>
+                        
+                        <div class="text-center">
+                            <p class="text-sakura-deep opacity-75 mb-0">
+                                Вже маєте акаунт? 
+                                <a href="{% url 'login' %}" class="text-sakura-rose text-decoration-none">Увійти</a>
+                            </p>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

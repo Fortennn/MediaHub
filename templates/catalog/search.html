@@ -1,0 +1,112 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<section class="search-hero">
+    <div class="container">
+        <div class="text-center mb-5">
+            <h1 class="search-title">Результати пошуку</h1>
+            <p class="text-sakura-deep opacity-75 mb-4">
+                {% if query %}
+                    Пошук за запитом: "{{ query }}"
+                {% else %}
+                    Введіть запит для пошуку
+                {% endif %}
+            </p>
+        </div>
+        
+        <div class="search-form-sakura mb-5">
+            <form method="GET" action="{% url 'search' %}">
+                <div class="input-group">
+                    <input type="text" name="q" class="form-control search-input-sakura" 
+                           placeholder="Введіть назву фільму, серіалу чи аніме..." 
+                           value="{{ query }}">
+                    <button type="submit" class="btn search-button-sakura">Пошук</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</section>
+
+<div class="container py-5">
+    {% if query %}
+        {% if results %}
+            <div class="row g-4">
+                {% for item in results %}
+                <div class="col-lg-4 col-md-6">
+                    <div class="search-result-card">
+                        <div class="d-flex">
+                            <div class="flex-shrink-0 me-3">
+                                {% if item.poster %}
+                                <img src="{{ item.poster.url }}" alt="{{ item.title }}" 
+                                     style="width: 100px; height: 150px; object-fit: cover; border-radius: 12px;">
+                                {% else %}
+                                <div class="bg-sakura-light d-flex align-items-center justify-content-center" 
+                                     style="width: 100px; height: 150px; border-radius: 12px;">
+                                    {% if item.media_type == 'movie' %}
+                                    <span class="text-sakura-rose">🎬</span>
+                                    {% elif item.media_type == 'series' %}
+                                    <span class="text-sakura-rose">📺</span>
+                                    {% else %}
+                                    <span class="text-sakura-rose">🌸</span>
+                                    {% endif %}
+                                </div>
+                                {% endif %}
+                            </div>
+                            <div class="flex-grow-1">
+                                <div class="d-flex justify-content-between align-items-start mb-2">
+                                    <h5 class="text-sakura-deep mb-0">
+                                        <a href="{% url 'media_detail' item.pk %}" class="text-decoration-none text-sakura-deep">
+                                            {{ item.title }}
+                                        </a>
+                                    </h5>
+                                    <span class="result-type">
+                                        {% if item.media_type == 'movie' %}
+                                        Фільм
+                                        {% elif item.media_type == 'series' %}
+                                        Серіал
+                                        {% else %}
+                                        Аніме
+                                        {% endif %}
+                                    </span>
+                                </div>
+                                <div class="mb-2">
+                                    <span class="text-sakura-rose me-3">{{ item.release_year }}</span>
+                                    <span class="text-sakura-deep opacity-75">{{ item.duration }} хв</span>
+                                </div>
+                                <div class="mb-3">
+                                    {% for genre in item.genres.all|slice:":3" %}
+                                    <span class="bg-sakura-soft text-sakura-deep px-2 py-1 rounded-pill me-1 mb-1 d-inline-block">
+                                        {{ genre.name }}
+                                    </span>
+                                    {% endfor %}
+                                </div>
+                                <p class="text-sakura-deep opacity-75 small mb-0">
+                                    {{ item.description|truncatechars:120 }}
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="text-center py-5">
+                <div class="display-1 text-sakura-soft mb-4">🔍</div>
+                <h3 class="text-sakura-deep mb-3">Нічого не знайдено</h3>
+                <p class="text-sakura-deep opacity-75 mb-4">
+                    За запитом "{{ query }}" нічого не знайдено. Спробуйте інші ключові слова.
+                </p>
+                <a href="{% url 'media_list' %}" class="btn btn-sakura-primary">Перейти до каталогу</a>
+            </div>
+        {% endif %}
+    {% else %}
+        <div class="text-center py-5">
+            <div class="display-1 text-sakura-soft mb-4">🔍</div>
+            <h3 class="text-sakura-deep mb-3">Введіть запит для пошуку</h3>
+            <p class="text-sakura-deep opacity-75 mb-4">
+                Використовуйте форму вище для пошуку фільмів, серіалів та аніме
+            </p>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

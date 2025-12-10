@@ -1,0 +1,372 @@
+{% extends 'base.html' %}
+
+{% block content %}
+{% load static %}
+
+<div class="container py-5 mt-5">
+    <div class="row">
+        <div class="col-lg-4">
+            <div class="poster-frame mb-4 text-center">
+                {% if media.poster %}
+                <img src="{{ media.poster.url }}" class="img-fluid rounded" alt="{{ media.title }}" 
+                     style="max-width: 100%; height: auto;">
+                {% else %}
+                <div class="bg-sakura-light d-flex align-items-center justify-content-center rounded" 
+                     style="height: 360px; max-width: 320px; margin: 0 auto;">
+                    {% if media.media_type == 'movie' %}
+                    <span class="text-sakura-rose display-1">🎬</span>
+                    {% elif media.media_type == 'series' %}
+                    <span class="text-sakura-rose display-1">📺</span>
+                    {% else %}
+                    <span class="text-sakura-rose display-1">🌸</span>
+                    {% endif %}
+                </div>
+                {% endif %}
+            </div>
+            
+            <div class="glass-card mb-4 media-info-card">
+                <h5 class="text-sakura-deep mb-3">Інформація</h5>
+                <div class="mb-2">
+                    <small class="text-sakura-deep opacity-75">Тип:</small>
+                    <div class="text-sakura-deep">
+                        {% if media.media_type == 'movie' %}
+                        Фільм
+                        {% elif media.media_type == 'series' %}
+                        Серіал
+                        {% else %}
+                        Аніме
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="mb-2">
+                    <small class="text-sakura-deep opacity-75">Рік:</small>
+                    <div class="text-sakura-deep">{{ media.release_year }}</div>
+                </div>
+                <div class="mb-2">
+                    <small class="text-sakura-deep opacity-75">Країна:</small>
+                    <div class="text-sakura-deep">{{ media.country }}</div>
+                </div>
+                <div class="mb-2">
+                    <small class="text-sakura-deep opacity-75">Тривалість:</small>
+                    <div class="text-sakura-deep">{{ media.duration }} хв</div>
+                </div>
+                <div class="mb-2">
+                    <small class="text-sakura-deep opacity-75">Рейтинг:</small>
+                    <div class="d-flex align-items-center">
+                        <div class="star-rating-detailed me-2" data-rating="{{ media.average_rating|default:0 }}">
+                            <span class="star">★</span>
+                            <span class="star">★</span>
+                            <span class="star">★</span>
+                            <span class="star">★</span>
+                            <span class="star">★</span>
+                        </div>
+                        <span class="text-sakura-deep fw-bold">{{ media.average_rating|default:0|floatformat:1 }}/10</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="d-flex flex-column gap-2">
+                {% if user.is_authenticated %}
+                
+                {# Форма списку перегляду як окремий елемент #}
+                <form method="POST" action="{% url 'toggle_watchlist' media.pk %}" class="d-flex flex-column gap-2 p-3 rounded-4 bg-sakura-light watchlist-combo">
+                    {% csrf_token %}
+                    <div class="watchlist-control">
+                        <select name="status" class="form-select watchlist-select">
+                            <option value="planned" {% if watchlist_status == 'planned' %}selected{% endif %}>В планах</option>
+                            <option value="watched" {% if watchlist_status == 'watched' %}selected{% endif %}>Переглянуто</option>
+                            <option value="favorite" {% if watchlist_status == 'favorite' %}selected{% endif %}>Улюблене</option>
+                        </select>
+                        <button type="submit" class="btn watchlist-submit">
+                            {% if is_in_watchlist %}Оновити список{% else %}Додати до списку{% endif %}
+                        </button>
+                    </div>
+                    <input type="hidden" name="next" value="{{ request.get_full_path }}">
+                    {% if is_in_watchlist %}
+                    <div class="d-flex justify-content-between align-items-center">
+                        <small class="text-sakura-deep opacity-75">Поточний статус: 
+                            {% if watchlist_status == 'planned' %}В планах{% elif watchlist_status == 'watched' %}Переглянуто{% else %}Улюблене{% endif %}
+                        </small>
+                        <button type="submit" name="remove" value="1" class="btn btn-sakura-ghost btn-sm">Прибрати</button>
+                    </div>
+                    {% endif %}
+                </form>
+                
+                <button type="button" class="btn btn-sakura-ghost w-100" data-bs-toggle="modal" data-bs-target="#ratingModal">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="me-2" viewBox="0 0 16 16">
+                        <path d="M2.97 8.006c-.035.068-.074.148-.109.231-.037.087-.07.181-.099.278A8.04 8.04 0 0 0 2 10c0 1.258.307 2.378.895 3.376.575.976 1.344 1.737 2.296 2.197.632.304 1.24.469 1.76.544a10.97 10.97 0 0 0 .798.053c.483 0 .977-.076 1.442-.239a5.044 5.044 0 0 0 1.791-.707 3.5 3.5 0 0 0 1.13-1.018 7.02 7.02 0 0 0 .584-.969c.14-.29.28-.588.397-.887.054-.14.092-.284.133-.427.028-.094.053-.19.076-.287.023-.095.045-.19.06-.286a11.516 11.516 0 0 0 .142-1.071c0-.498-.052-.992-.158-1.472-.11-.497-.27-.988-.5-1.458-.22-.45-.486-.87-.783-1.255a4.1 4.1 0 0 0-1.1-1.016 4.3 4.3 0 0 0-1.25-.668c-.46-.17-.92-.294-1.353-.377C8.1 2.94 7.6 2.924 7.108 3.01c-.482.083-.956.23-1.402.448-.44.22-.857.498-1.238.828-.363.313-.695.676-.982 1.077A7.5 7.5 0 0 0 3.04 7.42c-.03.067-.06.136-.09.205-.03.069-.058.14-.085.212zM8 4.417a.5.5 0 0 1 .8-.417l2.5 2a.5.5 0 0 1 0 .834l-2.5 2a.5.5 0 0 1-.8-.417V7.5H5.5a.5.5 0 0 1-.5-.5v-1a.5.5 0 0 1 .5-.5H8V4.417z"/>
+                    </svg>
+                    Оцінити
+                </button>
+                {% else %}
+                <a href="{% url 'login' %}" class="btn btn-sakura-soft w-100">Увійдіть для додавання</a>
+                {% endif %}
+                
+                {% if media.trailer_url %}
+                <a href="{{ media.trailer_url }}" target="_blank" class="btn btn-sakura-primary w-100">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="me-2" viewBox="0 0 16 16">
+                        <path d="M6.79 5.093A.5.5 0 0 0 6 5.5v5a.5.5 0 0 0 .79.407l3.5-2.5a.5.5 0 0 0 0-.814z"/>
+                        <path d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8m15 0A7 7 0 1 0 1 8a7 7 0 0 0 14 0"/>
+                    </svg>
+                    Дивитися трейлер
+                </a>
+                {% endif %}
+            </div>
+        </div>
+        
+        <div class="col-lg-8">
+            <div class="mb-4">
+                <h1 class="text-sakura-deep mb-2">{{ media.title }}</h1>
+                {% if media.original_title %}
+                <h5 class="text-sakura-rose mb-4">{{ media.original_title }}</h5>
+                {% endif %}
+                
+                <div class="d-flex flex-wrap gap-2 mb-4">
+                    {% for genre in media.genres.all %}
+                    <span class="badge-sakura">{{ genre.name }}</span>
+                    {% endfor %}
+                </div>
+
+                {% if media.media_type == 'series' or media.media_type == 'anime' %}
+                <div class="season-summary mb-4">
+                    <div class="summary-pill">
+                        <small class="text-sakura-deep opacity-75 d-block">Сезони</small>
+                        <span class="text-sakura-deep fw-bold">{{ season_count }}</span>
+                    </div>
+                    <div class="summary-pill">
+                        <small class="text-sakura-deep opacity-75 d-block">Серії</small>
+                        <span class="text-sakura-deep fw-bold">{{ episode_count }}</span>
+                    </div>
+                </div>
+                {% endif %}
+                
+                <div class="mb-4">
+                    <h4 class="text-sakura-deep mb-3">Опис</h4>
+                    <p class="text-sakura-deep" style="line-height: 1.8;">{{ media.description }}</p>
+                </div>
+            </div>
+            
+            <div>
+                <h4 class="text-sakura-deep mb-4">Відгуки</h4>
+                
+                {% if user.is_authenticated and not user_rating %}
+                <div class="text-center mb-4">
+                    <button type="button" class="btn btn-sakura-ghost" data-bs-toggle="modal" data-bs-target="#ratingModal">
+                        Залишити відгук
+                    </button>
+                </div>
+                {% endif %}
+                
+                {% if ratings %}
+                <div class="row g-3">
+                    {% for rating in ratings %}
+                    <div class="col-12">
+                        <div class="glass-card review-card">
+                            <div class="review-header">
+                                <div class="d-flex align-items-center gap-3">
+                                    <div class="avatar-circle me-0">
+                                        {% if rating.user.profile.avatar %}
+                                            <img src="{{ rating.user.profile.avatar.url }}" alt="{{ rating.user.username }}" class="avatar-img">
+                                        {% else %}
+                                            <span class="text-sakura-deep fw-bold">{{ rating.user.username|first|upper }}</span>
+                                        {% endif %}
+                                    </div>
+                                    <div>
+                                        <h6 class="text-sakura-deep mb-0">{{ rating.user.username }}</h6>
+                                        <small class="text-sakura-rose">{{ rating.created_at|date:"d.m.Y" }}</small>
+                                    </div>
+                                </div>
+                                <div class="review-score d-inline-flex align-items-center flex-wrap gap-2">
+                                <div class="star-rating-detailed" data-rating="{{ rating.score }}">
+                                    <span class="star">★</span>
+                                    <span class="star">★</span>
+                                    <span class="star">★</span>
+                                    <span class="star">★</span>
+                                    <span class="star">★</span>
+                                </div>
+                                <span class="text-sakura-deep fw-bold">{{ rating.score }}/10</span>
+                            </div>
+                        </div>
+                            {% if rating.comment %}
+                            <p class="text-sakura-deep mb-0 rating-comment">{{ rating.comment }}</p>
+                            {% endif %}
+                            {% if user.is_authenticated and rating.user_id == user.id %}
+                            <div class="d-flex flex-wrap gap-2 mt-3">
+                                <button
+                                    type="button"
+                                    class="btn btn-sakura-ghost btn-sm"
+                                    data-bs-toggle="modal"
+                                    data-bs-target="#editRatingModal"
+                                    data-rating-id="{{ rating.id }}"
+                                    data-score="{{ rating.score }}"
+                                    data-comment="{{ rating.comment|default_if_none:''|escapejs }}"
+                                    data-media-title="{{ media.title|escapejs }}"
+                                >
+                                    Редагувати
+                                </button>
+                                <form method="POST" action="{% url 'delete_rating' rating.id %}" class="d-inline">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="next" value="{{ request.get_full_path }}">
+                                    <button type="submit" class="btn btn-sakura-ghost btn-sm">Видалити</button>
+                                </form>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="text-center py-4">
+                    <div class="display-1 text-sakura-soft mb-3">💬</div>
+                    <h5 class="text-sakura-deep mb-3">Ще немає відгуків</h5>
+                    <p class="text-sakura-deep opacity-75">Будьте першим, хто залишить відгук!</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade modal-sakura" id="editRatingModal" tabindex="-1" data-update-url-template="{% url 'update_rating' 0 %}">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title text-sakura-deep" id="editRatingTitle">Редагувати відгук</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="POST" action="{% url 'update_rating' 0 %}" id="editRatingForm">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label text-sakura-deep mb-2">Оцінка (1-10)</label>
+                        <input type="number" name="score" id="editScoreInput" class="form-control input-sakura" min="1" max="10" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label text-sakura-deep mb-2">Коментар</label>
+                        <textarea name="comment" id="editCommentInput" class="form-control input-sakura" rows="4" placeholder="Оновіть свій відгук..."></textarea>
+                    </div>
+                    <input type="hidden" name="next" value="{{ request.get_full_path }}">
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-sakura-ghost" data-bs-dismiss="modal">Скасувати</button>
+                    <button type="submit" class="btn btn-sakura-primary">Зберегти</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade modal-sakura" id="ratingModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title text-sakura-deep">Оцінити "{{ media.title }}"</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="POST" action="{% url 'rate_media' media.pk %}">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <div class="mb-4">
+                        <label class="form-label text-sakura-deep mb-3">Оцінка (1-10)</label>
+                        <div class="d-flex justify-content-center gap-1 mb-3" id="starRating">
+                            {% for i in "12345678910"|slice:":10" %}
+                            <button type="button" class="btn btn-outline-sakura star-select" data-value="{{ forloop.counter }}">
+                                {{ forloop.counter }}
+                            </button>
+                            {% endfor %}
+                        </div>
+                        <input type="hidden" name="score" id="scoreInput" value="5">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label text-sakura-deep mb-2">Коментар (необов'язково)</label>
+                        <textarea name="comment" class="form-control input-sakura" rows="4" placeholder="Напишіть ваш відгук..."></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-sakura-ghost" data-bs-dismiss="modal">Скасувати</button>
+                    <button type="submit" class="btn btn-sakura-primary">Надіслати</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+{% block extra_js %}
+{% load static %}
+<script src="{% static 'js/star_rating.js' %}"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const starButtons = document.querySelectorAll('.star-select');
+        const scoreInput = document.getElementById('scoreInput');
+        
+        const initialScore = 5;
+        scoreInput.value = initialScore;
+        starButtons.forEach(btn => {
+            const value = parseInt(btn.getAttribute('data-value'));
+            if (value <= initialScore) {
+                btn.classList.add('bg-sakura-rose', 'text-white');
+                btn.classList.remove('btn-outline-sakura');
+            }
+        });
+        
+        starButtons.forEach(button => {
+            button.addEventListener('click', function(e) {
+                e.preventDefault();
+                const value = parseInt(this.getAttribute('data-value'));
+                scoreInput.value = value;
+                
+                starButtons.forEach(btn => {
+                    btn.classList.remove('bg-sakura-rose', 'text-white');
+                    btn.classList.add('btn-outline-sakura');
+                });
+                
+                starButtons.forEach(btn => {
+                    const btnValue = parseInt(btn.getAttribute('data-value'));
+                    if (btnValue <= value) {
+                        btn.classList.add('bg-sakura-rose', 'text-white');
+                        btn.classList.remove('btn-outline-sakura');
+                    }
+                });
+            });
+        });
+
+        const editModal = document.getElementById('editRatingModal');
+        if (editModal) {
+            const editForm = document.getElementById('editRatingForm');
+            const editScoreInput = document.getElementById('editScoreInput');
+            const editCommentInput = document.getElementById('editCommentInput');
+            const editTitle = document.getElementById('editRatingTitle');
+            const updateUrlTemplate = editModal.dataset.updateUrlTemplate;
+
+            editModal.addEventListener('show.bs.modal', function(event) {
+                const button = event.relatedTarget;
+                if (!button) return;
+
+                const ratingId = button.getAttribute('data-rating-id');
+                const score = button.getAttribute('data-score') || '';
+                const comment = button.getAttribute('data-comment') || '';
+                const mediaTitle = button.getAttribute('data-media-title') || '';
+
+                if (editForm && updateUrlTemplate && ratingId) {
+                    editForm.action = updateUrlTemplate.replace('0', ratingId);
+                }
+
+                if (editScoreInput) {
+                    editScoreInput.value = score;
+                }
+
+                if (editCommentInput) {
+                    editCommentInput.value = comment;
+                }
+
+                if (editTitle) {
+                    editTitle.textContent = mediaTitle
+                        ? `Редагувати відгук про \"${mediaTitle}\"`
+                        : 'Редагувати відгук';
+                }
+            });
+        }
+    });
+</script>
+{% endblock %}
+{% endblock %}

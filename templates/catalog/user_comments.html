@@ -1,0 +1,143 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<section class="catalog-hero text-center">
+    <div class="container">
+        <h1 class="catalog-title">Мої коментарі</h1>
+        <p class="text-sakura-deep opacity-75">Всі ваші оцінки з коментарями.</p>
+    </div>
+</section>
+
+<div class="container py-5">
+    {% if comments %}
+    <div class="row g-4">
+        {% for rating in comments %}
+        <div class="col-12 col-md-6">
+            <div class="glass-card review-card">
+                <div class="review-header">
+                    <div>
+                        <h6 class="text-sakura-deep mb-1">
+                            <a href="{% url 'media_detail' rating.media_item.pk %}" class="text-sakura-deep text-decoration-none">
+                                {{ rating.media_item.title }}
+                            </a>
+                        </h6>
+                        <small class="text-sakura-rose">{{ rating.created_at|date:"d.m.Y" }}</small>
+                    </div>
+                    <div class="review-score d-inline-flex align-items-center flex-wrap gap-2">
+                        <div class="star-rating-detailed" data-rating="{{ rating.score }}">
+                            <span class="star">★</span>
+                            <span class="star">★</span>
+                            <span class="star">★</span>
+                            <span class="star">★</span>
+                            <span class="star">★</span>
+                        </div>
+                        <span class="text-sakura-deep fw-bold">{{ rating.score }}/10</span>
+                    </div>
+                </div>
+                <p class="text-sakura-deep mb-0 rating-comment">{{ rating.comment }}</p>
+                <div class="d-flex flex-wrap gap-2 mt-3">
+                    <button
+                        type="button"
+                        class="btn btn-sakura-ghost btn-sm"
+                        data-bs-toggle="modal"
+                        data-bs-target="#editRatingModal"
+                        data-rating-id="{{ rating.id }}"
+                        data-score="{{ rating.score }}"
+                        data-comment="{{ rating.comment|default_if_none:''|escapejs }}"
+                        data-media-title="{{ rating.media_item.title|escapejs }}"
+                    >
+                        Редагувати
+                    </button>
+                    <form method="POST" action="{% url 'delete_rating' rating.id %}" class="d-inline">
+                        {% csrf_token %}
+                        <input type="hidden" name="next" value="{{ request.get_full_path }}">
+                        <button type="submit" class="btn btn-sakura-ghost btn-sm">Видалити</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="text-center py-5">
+        <div class="display-1 text-sakura-soft mb-3">🙂</div>
+        <h4 class="text-sakura-deep mb-2">Коментарів поки немає</h4>
+        <p class="text-sakura-deep opacity-75 mb-3">Додайте оцінку з коментарем на сторінці вподобаного тайтлу.</p>
+        <a href="{% url 'media_list' %}" class="btn btn-sakura-primary">До каталогу</a>
+    </div>
+    {% endif %}
+</div>
+<div class="modal fade modal-sakura" id="editRatingModal" tabindex="-1" data-update-url-template="{% url 'update_rating' 0 %}">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title text-sakura-deep" id="editRatingTitle">Редагувати відгук</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="POST" action="{% url 'update_rating' 0 %}" id="editRatingForm">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label text-sakura-deep mb-2">Оцінка (1-10)</label>
+                        <input type="number" name="score" id="editScoreInput" class="form-control input-sakura" min="1" max="10" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label text-sakura-deep mb-2">Коментар</label>
+                        <textarea name="comment" id="editCommentInput" class="form-control input-sakura" rows="4" placeholder="Оновіть свій відгук..."></textarea>
+                    </div>
+                    <input type="hidden" name="next" value="{{ request.get_full_path }}">
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-sakura-ghost" data-bs-dismiss="modal">Скасувати</button>
+                    <button type="submit" class="btn btn-sakura-primary">Зберегти</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+{% load static %}
+<script src="{% static 'js/star_rating.js' %}"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const editModal = document.getElementById('editRatingModal');
+        if (!editModal) return;
+
+        const editForm = document.getElementById('editRatingForm');
+        const editScoreInput = document.getElementById('editScoreInput');
+        const editCommentInput = document.getElementById('editCommentInput');
+        const editTitle = document.getElementById('editRatingTitle');
+        const updateUrlTemplate = editModal.dataset.updateUrlTemplate;
+
+        editModal.addEventListener('show.bs.modal', function(event) {
+            const button = event.relatedTarget;
+            if (!button) return;
+
+            const ratingId = button.getAttribute('data-rating-id');
+            const score = button.getAttribute('data-score') || '';
+            const comment = button.getAttribute('data-comment') || '';
+            const mediaTitle = button.getAttribute('data-media-title') || '';
+
+            if (editForm && updateUrlTemplate && ratingId) {
+                editForm.action = updateUrlTemplate.replace('0', ratingId);
+            }
+
+            if (editScoreInput) {
+                editScoreInput.value = score;
+            }
+
+            if (editCommentInput) {
+                editCommentInput.value = comment;
+            }
+
+            if (editTitle) {
+                editTitle.textContent = mediaTitle
+                    ? `Редагувати відгук про \"${mediaTitle}\"`
+                    : 'Редагувати відгук';
+            }
+        });
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,219 @@
+﻿{% extends 'base.html' %}
+
+{% block content %}
+<section class="catalog-hero">
+    <div class="container">
+        <div class="text-center mb-5">
+            <h1 class="catalog-title">
+                {% if current_type == 'movie' %}
+                    Фільми
+                {% elif current_type == 'series' %}
+                    Серіали
+                {% elif current_type == 'anime' %}
+                    Аніме
+                {% else %}
+                    Весь каталог
+                {% endif %}
+            </h1>
+            <p class="text-sakura-deep opacity-75 mb-4">Переглядайте колекцію, фільтруйте за жанром і сортуйте так, як зручно.</p>
+        </div>
+        
+        <div class="search-form-sakura mb-5">
+            <form method="GET" action="{% url 'media_list' %}">
+                <div class="input-group">
+                    <input type="text" name="q" class="form-control search-input-sakura" 
+                           placeholder="Введіть назву чи частину назви..." 
+                           value="{{ request.GET.q }}">
+                    {% if current_type != 'all' %}
+                    <input type="hidden" name="type" value="{{ current_type }}">
+                    {% endif %}
+                    <button type="submit" class="btn search-button-sakura">Пошук</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</section>
+
+<div class="container py-5">
+    <div class="row">
+        <div class="col-lg-3">
+            <div class="filters-sidebar mb-4">
+                <h4 class="text-sakura-deep mb-4">Категорії</h4>
+                <div class="d-flex flex-column gap-2 mb-4">
+                    <a href="{% url 'media_list' %}" class="type-option {% if current_type == 'all' %}active{% endif %}">
+                        <span>🎞️</span> Усе
+                    </a>
+                    <a href="{% url 'media_list' %}?type=movie" class="type-option {% if current_type == 'movie' %}active{% endif %}">
+                        <span>🎬</span> Фільми
+                    </a>
+                    <a href="{% url 'media_list' %}?type=series" class="type-option {% if current_type == 'series' %}active{% endif %}">
+                        <span>📺</span> Серіали
+                    </a>
+                    <a href="{% url 'media_list' %}?type=anime" class="type-option {% if current_type == 'anime' %}active{% endif %}">
+                        <span>🌸</span> Аніме
+                    </a>
+                </div>
+                
+                <h4 class="text-sakura-deep mb-4">Жанри</h4>
+                <form method="GET" class="mb-4">
+                    {% if current_type != 'all' %}
+                    <input type="hidden" name="type" value="{{ current_type }}">
+                    {% endif %}
+                    {% if request.GET.q %}
+                    <input type="hidden" name="q" value="{{ request.GET.q }}">
+                    {% endif %}
+                    {% if current_sort %}
+                    <input type="hidden" name="sort" value="{{ current_sort }}">
+                    {% endif %}
+                    <div class="genre-select-wrapper">
+                        <span class="genre-select-label text-uppercase">Обрати жанр</span>
+                        <select name="genre" class="form-select genre-select-sakura" onchange="this.form.submit()">
+                            <option value="" {% if not current_genre %}selected{% endif %}>Усі жанри</option>
+                            {% for genre in genres %}
+                            <option value="{{ genre.slug }}" {% if current_genre == genre.slug %}selected{% endif %}>{{ genre.name }}</option>
+                            {% endfor %}
+                        </select>
+                        <span class="genre-select-chevron">⌄</span>
+                    </div>
+                </form>
+                
+                <h4 class="text-sakura-deep mb-4">Сортування</h4>
+                <form method="GET" id="sortForm">
+                    {% if current_type != 'all' %}
+                    <input type="hidden" name="type" value="{{ current_type }}">
+                    {% endif %}
+                    {% if current_genre %}
+                    <input type="hidden" name="genre" value="{{ current_genre }}">
+                    {% endif %}
+                    <select name="sort" class="form-select sort-select-sakura" onchange="this.form.submit()">
+                        <option value="-created_at" {% if current_sort == '-created_at' %}selected{% endif %}>Новинки</option>
+                        <option value="title" {% if current_sort == 'title' %}selected{% endif %}>За назвою (А-Я)</option>
+                        <option value="-release_year" {% if current_sort == '-release_year' %}selected{% endif %}>За роком (нові)</option>
+                        <option value="-avg_rating" {% if current_sort == '-avg_rating' %}selected{% endif %}>За рейтингом</option>
+                    </select>
+                </form>
+            </div>
+
+        </div>
+        
+        <div class="col-lg-9">
+            {% if page_obj %}
+            <div class="row g-4">
+                {% for item in page_obj %}
+                <div class="col-xl-4 col-lg-6 col-md-6">
+                    <div class="card-sakura media-card-catalog h-100 position-relative">
+                        <div class="position-relative">
+                            {% if item.poster %}
+                            <img src="{{ item.poster.url }}" class="card-img-top" alt="{{ item.title }}" style="height: 320px; width: 100%; object-fit: cover;">
+                            {% else %}
+                            <div class="bg-sakura-light d-flex align-items-center justify-content-center" style="height: 320px;">
+                                {% if item.media_type == 'movie' %}
+                                <span class="text-sakura-rose display-1">🎬</span>
+                                {% elif item.media_type == 'series' %}
+                                <span class="text-sakura-rose display-1">📺</span>
+                                {% else %}
+                                <span class="text-sakura-rose display-1">🌸</span>
+                                {% endif %}
+                            </div>
+                            {% endif %}
+                            <div class="media-type-badge">
+                                {% if item.media_type == 'movie' %}
+                                Фільм
+                                {% elif item.media_type == 'series' %}
+                                Серіал
+                                {% else %}
+                                Аніме
+                                {% endif %}
+                            </div>
+                            <div class="position-absolute bottom-0 start-0 m-2">
+                                <div class="rating-chip d-inline-flex align-items-center gap-1">
+                                    <div class="star-rating-detailed" data-rating="{{ item.average_rating|default:0 }}">
+                                        <span class="star">★</span>
+                                        <span class="star">★</span>
+                                        <span class="star">★</span>
+                                        <span class="star">★</span>
+                                        <span class="star">★</span>
+                                    </div>
+                                    <small class="text-sakura-deep fw-semibold">{{ item.average_rating|default:0|floatformat:1 }}</small>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="card-body">
+                            <h5 class="text-sakura-deep mb-2">
+                                <a href="{% url 'media_detail' item.pk %}" class="text-decoration-none text-sakura-deep">
+                                    {{ item.title }}
+                                </a>
+                            </h5>
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <small class="text-sakura-rose">{{ item.release_year }}</small>
+                                <small class="text-sakura-deep opacity-75">{{ item.duration }} хв</small>
+                            </div>
+                            <div class="d-flex flex-wrap gap-1 mb-3">
+                                {% for genre in item.genres.all|slice:":2" %}
+                                <small class="bg-sakura-soft text-sakura-deep px-2 py-1 rounded-pill">
+                                    {{ genre.name }}
+                                </small>
+                                {% endfor %}
+                            </div>
+                            <div class="mt-3">
+                                <a href="{% url 'media_detail' item.pk %}" class="btn btn-sakura-primary btn-sm w-100">Детальніше</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            
+            {% if page_obj.has_other_pages %}
+            <nav class="mt-5">
+                <ul class="pagination justify-content-center">
+                    {% if page_obj.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link-sakura" href="?{% if current_type != 'all' %}type={{ current_type }}&{% endif %}{% if current_genre %}genre={{ current_genre }}&{% endif %}{% if current_sort != '-created_at' %}sort={{ current_sort }}&{% endif %}page={{ page_obj.previous_page_number }}"  style = "width: 100px;">
+                            Назад
+                        </a>
+                    </li>
+                    {% endif %}
+                    
+                    {% for num in page_obj.paginator.page_range %}
+                    {% if page_obj.number == num %}
+                    <li class="page-item">
+                        <span class="page-link-sakura active">{{ num }}</span>
+                    </li>
+                    {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                    <li class="page-item">
+                        <a class="page-link-sakura" href="?{% if current_type != 'all' %}type={{ current_type }}&{% endif %}{% if current_genre %}genre={{ current_genre }}&{% endif %}{% if current_sort != '-created_at' %}sort={{ current_sort }}&{% endif %}page={{ num }}">
+                            {{ num }}
+                        </a>
+                    </li>
+                    {% endif %}
+                    {% endfor %}
+                    
+                    {% if page_obj.has_next %}
+                    <li class="page-item">
+                        <a class="page-link-sakura" href="?{% if current_type != 'all' %}type={{ current_type }}&{% endif %}{% if current_genre %}genre={{ current_genre }}&{% endif %}{% if current_sort != '-created_at' %}sort={{ current_sort }}&{% endif %}page={{ page_obj.next_page_number }}" style = "width: 100px;">
+                            Вперед
+                        </a>
+                    </li>
+                    {% endif %}
+                </ul>
+            </nav>
+            {% endif %}
+            
+            {% else %}
+            <div class="text-center py-5">
+                <div class="display-1 text-sakura-soft mb-4">😔</div>
+                <h3 class="text-sakura-deep mb-3">Нічого не знайдено</h3>
+                <p class="text-sakura-deep opacity-75 mb-4">Спробуйте інший запит або приберіть частину фільтрів.</p>
+                <a href="{% url 'media_list' %}" class="btn btn-sakura-primary">Скинути фільтри</a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+{% block extra_js %}
+{% load static %}
+<script src="{% static 'js/star_rating.js' %}"></script>
+{% endblock %}

@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Sakura Media - Фільми, Серіали, Аніме{% endblock %}</title>
+    <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@400;600;700&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/sakura.css' %}">
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <div class="petal-container"></div>
+    <nav class="navbar navbar-expand-lg navbar-sakura fixed-top">
+        <div class="container">
+            <a class="navbar-brand navbar-brand-sakura" href="{% url 'home' %}">
+                Sakura Media
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse navbar-layout" id="navbarNav">
+                <ul class="navbar-nav mx-auto navbar-nav-center">
+                    <li class="nav-item">
+                        <a class="nav-link nav-link-sakura" href="{% url 'home' %}">Головна</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link nav-link-sakura" href="{% url 'media_list' %}">Каталог</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link nav-link-sakura" href="{% url 'search' %}">Пошук</a>
+                    </li>
+                </ul>
+                <div class="navbar-user d-flex align-items-center">
+                    {% if user.is_authenticated %}
+                    <div class="dropdown me-3">
+                        <a href="#" class="d-flex align-items-center text-decoration-none dropdown-toggle" id="userDropdown" data-bs-toggle="dropdown">
+                            <div class="avatar-circle me-2">
+                                {% if user.profile.avatar %}
+                                    <img src="{{ user.profile.avatar.url }}" alt="{{ user.username }}" class="avatar-img">
+                                {% else %}
+                                    <span class="text-sakura-deep fw-bold">{{ user.username|first|upper }}</span>
+                                {% endif %}
+                            </div>
+                            <span class="text-sakura-deep">{{ user.username }}</span>
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-sakura">
+                            <li><a class="dropdown-item" href="{% url 'profile' %}">Профіль</a></li>
+                            <li><a class="dropdown-item" href="{% url 'user_watchlist' %}">Список перегляду</a></li>
+                            {% if user.is_staff or user.is_superuser %}
+                            <li><a class="dropdown-item" href="{% url 'admin:index' %}">Адмін-панель</a></li>
+                            {% endif %}
+                            <li><hr class="dropdown-divider"></li>
+                            <li>
+                                <form method="POST" action="{% url 'logout' %}" class="d-inline">
+                                    {% csrf_token %}
+                                    <button type="submit" class="dropdown-item border-0 bg-transparent w-100 text-start">
+                                        Вийти
+                                    </button>
+                                </form>
+                            </li>
+                        </ul>
+                    </div>
+                    {% else %}
+                    <a href="{% url 'login' %}" class="btn btn-sakura-ghost me-2">Вхід</a>
+                    <a href="{% url 'register' %}" class="btn btn-sakura-primary">Реєстрація</a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    {% if messages %}
+    <div class="container mt-5 pt-5">
+        {% for message in messages %}
+        <div class="alert alert-sakura alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+    <main class="main-content-wrapper">
+        {% block content %}{% endblock %}
+    </main>
+        <footer class="footer-sakura">
+        <div class="container">
+            <div class="row g-4">
+                <div class="col-lg-4">
+                    <h3 class="footer-title">Sakura Media</h3>
+                    <p class="mb-4">Найкраща колекція фільмів, серіалів та аніме в стилі японської сакури</p>
+                </div>
+                <div class="col-lg-2 col-md-4">
+                    <h5 class="text-sakura-light mb-4">Розділи</h5>
+                    <a href="{% url 'home' %}" class="footer-link d-block">Головна</a>
+                    <a href="{% url 'media_list' %}" class="footer-link d-block">Каталог</a>
+                    <a href="{% url 'search' %}" class="footer-link d-block">Пошук</a>
+                </div>
+                <div class="col-lg-3 col-md-4">
+                    <h5 class="text-sakura-light mb-4">Категорії</h5>
+                    <a href="{% url 'media_list' %}?type=movie" class="footer-link d-block">Фільми</a>
+                    <a href="{% url 'media_list' %}?type=series" class="footer-link d-block">Серіали</a>
+                    <a href="{% url 'media_list' %}?type=anime" class="footer-link d-block">Аніме</a>
+                </div>
+                <div class="col-lg-3 col-md-4">
+                    <h5 class="text-sakura-light mb-4">Контакти</h5>
+                    <a href="mailto:info@sakuramedia.com" class="footer-link d-block">info@sakuramedia.com</a>
+                </div>
+            </div>
+            <hr class="my-4" style="border-color: rgba(251, 213, 229, 0.3);">
+            <div class="text-center text-sakura-light opacity-75">
+                <p>©FORTEN</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    {% block extra_js %}{% endblock %}
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            for (let i = 0; i < 8; i++) {
+                createPetal();
+            }
+        });
+
+        function createPetal() {
+            const petal = document.createElement('div');
+            petal.className = 'petal';
+            petal.style.left = Math.random() * 100 + 'vw';
+            petal.style.animationDelay = Math.random() * 15 + 's';
+            petal.style.opacity = Math.random() * 0.5 + 0.2;
+            petal.style.transform = 'scale(' + (Math.random() * 0.5 + 0.5) + ')';
+            document.querySelector('.petal-container').appendChild(petal);
+
+            setTimeout(() => {
+                petal.remove();
+                createPetal();
+            }, 20000);
+        }
+        
+        document.querySelectorAll('.card-click').forEach(function(card) {
+            var go = function() {
+                var url = card.getAttribute('data-href');
+                if (url) {
+                    window.location.href = url;
+                }
+            };
+            card.addEventListener('click', go);
+            card.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    go();
+                }
+            });
+            card.querySelectorAll('a, button, form, input, select, textarea').forEach(function(el) {
+                el.addEventListener('click', function(e) { e.stopPropagation(); });
+            });
+        });
+
+        {% if user.is_authenticated and request.resolver_match.url_name == 'home' %}
+        window.addEventListener('load', function() {
+            const toastEl = document.getElementById('welcomeToast');
+            const alreadyShown = sessionStorage.getItem('welcomeToastShown') === '1';
+            if (toastEl && !alreadyShown) {
+                const toast = new bootstrap.Toast(toastEl, { delay: 3000 });
+                toast.show();
+                sessionStorage.setItem('welcomeToastShown', '1');
+            }
+        });
+        {% endif %}
+    </script>
+
+    {% if user.is_authenticated and request.resolver_match.url_name == 'home' %}
+    <div class="toast-container position-fixed top-0 start-0 p-3">
+        <div id="welcomeToast" class="toast toast-sakura align-items-center" role="status" aria-live="polite" aria-atomic="true">
+            <div class="toast-body d-flex align-items-center gap-2">
+                <div class="avatar-circle" style="width: 32px; height: 32px;">
+                    {% if user.profile.avatar %}
+                        <img src="{{ user.profile.avatar.url }}" alt="{{ user.username }}" class="avatar-img">
+                    {% else %}
+                        <span class="text-sakura-deep fw-bold">{{ user.username|first|upper }}</span>
+                    {% endif %}
+                </div>
+                <div>
+                    <strong class="text-sakura-deep d-block">Вітаємо, {{ user.username }}!</strong>
+                    <small class="text-sakura-deep opacity-75">Раді бачити вас знову</small>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</body>
+</html>

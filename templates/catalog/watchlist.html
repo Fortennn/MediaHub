@@ -1,0 +1,158 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<section class="catalog-hero">
+    <div class="container">
+        <div class="text-center mb-5">
+            <h1 class="catalog-title">Мій список перегляду</h1>
+            <p class="text-sakura-deep opacity-75">Організуйте тайтли за категоріями: в планах, переглянуто, улюблене.</p>
+        </div>
+        <div class="d-flex flex-column gap-3">
+            <div class="search-form-sakura w-100">
+                <form method="GET" action="{% url 'user_watchlist' %}" class="w-100">
+                    <div class="input-group w-100">
+                        <input type="text" name="q" class="form-control search-input-sakura"
+                               placeholder="Знайти у списку..." value="{{ search_query }}">
+                        {% if status_filter and status_filter != 'all' %}
+                        <input type="hidden" name="status" value="{{ status_filter }}">
+                        {% endif %}
+                        {% if media_type_filter and media_type_filter != 'all' %}
+                        <input type="hidden" name="type" value="{{ media_type_filter }}">
+                        {% endif %}
+                        <button type="submit" class="btn search-button-sakura">Пошук</button>
+                    </div>
+                </form>
+            </div>
+            <div class="d-flex flex-wrap gap-2 align-items-center justify-content-center">
+                <div class="nav nav-pills gap-2 flex-wrap align-items-center">
+                    <a class="btn {% if status_filter == 'all' %}btn-sakura-primary{% else %}btn-sakura-ghost{% endif %}" href="{% url 'user_watchlist' %}{% if search_query or media_type_filter and media_type_filter != 'all' %}?{% endif %}{% if search_query %}q={{ search_query }}{% endif %}{% if search_query and media_type_filter and media_type_filter != 'all' %}&{% endif %}{% if media_type_filter and media_type_filter != 'all' %}type={{ media_type_filter }}{% endif %}">
+                        Усі ({{ total_watchlist_count }})
+                    </a>
+                    {% for tab in status_tabs %}
+                    <a class="btn {% if status_filter == tab.value %}btn-sakura-primary{% else %}btn-sakura-ghost{% endif %}" href="{% url 'user_watchlist' %}?status={{ tab.value }}{% if search_query %}&q={{ search_query }}{% endif %}{% if media_type_filter and media_type_filter != 'all' %}&type={{ media_type_filter }}{% endif %}">
+                        {{ tab.label }} ({{ tab.count }})
+                    </a>
+                    {% endfor %}
+                </div>
+                <form method="GET" action="{% url 'user_watchlist' %}" class="ms-auto" style="min-width: 180px;">
+                    {% if search_query %}
+                    <input type="hidden" name="q" value="{{ search_query }}">
+                    {% endif %}
+                    {% if status_filter and status_filter != 'all' %}
+                    <input type="hidden" name="status" value="{{ status_filter }}">
+                    {% endif %}
+                    <select name="type" class="form-select form-select-sm watchlist-select" onchange="this.form.submit()">
+                        <option value="all" {% if media_type_filter == 'all' %}selected{% endif %}>Усі типи</option>
+                        <option value="movie" {% if media_type_filter == 'movie' %}selected{% endif %}>Фільми</option>
+                        <option value="series" {% if media_type_filter == 'series' %}selected{% endif %}>Серіали</option>
+                        <option value="anime" {% if media_type_filter == 'anime' %}selected{% endif %}>Аніме</option>
+                    </select>
+                </form>
+            </div>
+        </div>
+    </div>
+</section>
+
+<div class="container py-5">
+    {% if watchlist %}
+    <div class="row g-4">
+        {% for item in watchlist %}
+        <div class="col-xl-3 col-lg-4 col-md-6">
+            <div class="card-sakura media-card-catalog h-100 position-relative">
+                <div class="position-relative">
+                    <a href="{% url 'media_detail' item.media_item.pk %}" class="text-decoration-none">
+                        {% if item.media_item.poster %}
+                        <img src="{{ item.media_item.poster.url }}" class="card-img-top" alt="{{ item.media_item.title }}" style="height: 320px; width: 100%; object-fit: cover;">
+                        {% else %}
+                        <div class="bg-sakura-light d-flex align-items-center justify-content-center" style="height: 320px;">
+                            {% if item.media_item.media_type == 'movie' %}
+                            <span class="text-sakura-rose display-1">🎬</span>
+                            {% elif item.media_item.media_type == 'series' %}
+                            <span class="text-sakura-rose display-1">📺</span>
+                            {% else %}
+                            <span class="text-sakura-rose display-1">🌸</span>
+                            {% endif %}
+                        </div>
+                        {% endif %}
+                    </a>
+                    <div class="media-type-badge">
+                        {% if item.media_item.media_type == 'movie' %}
+                        Фільм
+                        {% elif item.media_item.media_type == 'series' %}
+                        Серіал
+                        {% else %}
+                        Аніме
+                        {% endif %}
+                    </div>
+                    <div class="position-absolute bottom-0 start-0 m-2">
+                        <div class="rating-chip d-inline-flex align-items-center gap-1">
+                            <div class="star-rating-detailed" data-rating="{{ item.media_item.average_rating|default:0 }}">
+                                <span class="star">★</span>
+                                <span class="star">★</span>
+                                <span class="star">★</span>
+                                <span class="star">★</span>
+                                <span class="star">★</span>
+                            </div>
+                            <small class="text-sakura-deep fw-semibold">{{ item.media_item.average_rating|default:0|floatformat:1 }}</small>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card-body">
+                    <h5 class="text-sakura-deep mb-2">
+                        <a href="{% url 'media_detail' item.media_item.pk %}" class="text-decoration-none text-sakura-deep">
+                            {{ item.media_item.title }}
+                        </a>
+                    </h5>
+                    <div class="d-flex align-items-center justify-content-between mb-2">
+                        <span class="badge-sakura text-uppercase">{{ item.get_status_display }}</span>
+                        <small class="text-sakura-rose opacity-75">{{ item.added_at|date:"d.m.Y" }}</small>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <small class="text-sakura-rose">{{ item.media_item.release_year }}</small>
+                        <small class="text-sakura-deep opacity-75">{{ item.media_item.duration }} хв</small>
+                    </div>
+                    <div class="d-flex flex-wrap gap-1 mb-3">
+                        {% for genre in item.media_item.genres.all|slice:":2" %}
+                        <small class="bg-sakura-soft text-sakura-deep px-2 py-1 rounded-pill">
+                            {{ genre.name }}
+                        </small>
+                        {% endfor %}
+                    </div>
+                    <div class="d-flex flex-column gap-2">
+                        <form method="POST" action="{% url 'toggle_watchlist' item.media_item.pk %}" class="d-flex gap-2 align-items-center">
+                            {% csrf_token %}
+                            <input type="hidden" name="next" value="{{ request.get_full_path }}">
+                            <select name="status" class="form-select form-select-sm watchlist-select">
+                                <option value="planned" {% if item.status == 'planned' %}selected{% endif %}>В планах</option>
+                                <option value="watched" {% if item.status == 'watched' %}selected{% endif %}>Переглянуто</option>
+                                <option value="favorite" {% if item.status == 'favorite' %}selected{% endif %}>Улюблене</option>
+                            </select>
+                            <button type="submit" class="btn btn-sakura-primary btn-sm">Зберегти</button>
+                        </form>
+                        <form method="POST" action="{% url 'toggle_watchlist' item.media_item.pk %}">
+                            {% csrf_token %}
+                            <input type="hidden" name="remove" value="1">
+                            <input type="hidden" name="next" value="{{ request.get_full_path }}">
+                            <button type="submit" class="btn btn-sakura-ghost btn-sm w-100">Вилучити зі списку</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="text-center py-5">
+        <div class="display-1 text-sakura-soft mb-4">📝</div>
+        <h3 class="text-sakura-deep mb-3">Список порожній</h3>
+        <p class="text-sakura-deep opacity-75 mb-4">Додавайте тайтли в планах, відзначайте переглянуті або додавайте в улюблені.</p>
+        <a href="{% url 'media_list' %}" class="btn btn-sakura-primary">Переглянути каталог</a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+{% block extra_js %}
+{% load static %}
+<script src="{% static 'js/star_rating.js' %}"></script>
+{% endblock %}
