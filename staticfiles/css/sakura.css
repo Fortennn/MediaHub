@@ -1095,6 +1095,108 @@ body::before {
     transform: translateY(-2px) scale(1.02);
 }
 
+.watchlist-select {
+    appearance: none;
+    background: linear-gradient(135deg, #ffffff 0%, #ffeaf4 100%);
+    border: 1px solid #a03b64;
+    border-radius: 999px;
+    color: #b13364;
+    font-weight: 600;
+    padding: 0.55rem 1rem;
+    min-width: 170px;
+    box-shadow: 0 8px 18px rgba(210, 92, 132, 0.18);
+    background-image: url("data:image/svg+xml,%3Csvg width='18' height='18' viewBox='0 0 24 24' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M6 9l6 6 6-6' stroke='%23b13364' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: calc(100% - 12px) 50%;
+    background-size: 18px;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.1s ease;
+}
+
+.watchlist-select:focus {
+    border-color: #d65c8c;
+    box-shadow: 0 0 0 4px rgba(214, 92, 140, 0.18);
+    outline: none;
+    transform: translateY(-1px);
+}
+
+.watchlist-select:hover {
+    border-color: #d65c8c;
+}
+
+html {
+    scrollbar-width: thin;
+    scrollbar-color: #f28ba9 #ffe7e0;
+}
+
+::-webkit-scrollbar {
+    width: 10px;
+}
+
+::-webkit-scrollbar-track {
+    background: #ffe7e0;
+}
+
+::-webkit-scrollbar-thumb {
+    background: linear-gradient(180deg, #fcb1c7 0%, #f28ba9 100%);
+    border-radius: 999px;
+    border: 2px solid #ffe7e0;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(180deg, #f28ba9 0%, #e2678c 100%);
+}
+
+.watchlist-control {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 0;
+    width: 100%;
+    border: 1px solid #d65c8c;
+    border-radius: 999px;
+    overflow: hidden;
+    background: linear-gradient(135deg, #fff7fb 0%, #ffeaf4 100%);
+    box-shadow: 0 10px 22px rgba(214, 92, 140, 0.12);
+}
+
+.watchlist-control .watchlist-select {
+    border: none;
+    border-radius: 0;
+    min-height: 46px;
+    box-shadow: none;
+    background: linear-gradient(135deg, #fff7fb 0%, #ffeaf4 100%);
+    font-weight: 700;
+    color: #a03b64;
+    padding: 0.65rem 1rem;
+    background-image: url("data:image/svg+xml,%3Csvg width='18' height='18' viewBox='0 0 24 24' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M6 9l6 6 6-6' stroke='%23a03b64' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: calc(100% - 14px) 50%;
+    background-size: 16px;
+}
+
+.watchlist-control .watchlist-select:focus {
+    border: none;
+    box-shadow: inset 0 0 0 2px rgba(214, 92, 140, 0.18);
+}
+
+.watchlist-control .btn {
+    border: none;
+    border-radius: 0;
+    min-height: 46px;
+    background: linear-gradient(135deg, #ffeaf4 0%, #ffd4e7 100%);
+    color: #a03b64;
+    font-weight: 700;
+    padding-inline: 18px;
+    box-shadow: none;
+    border-left: 1px solid #e7b6c9;
+    width: 100%;
+}
+
+.watchlist-control .btn:hover,
+.watchlist-control .btn:focus {
+    background: linear-gradient(135deg, #ffddec 0%, #ffc7e0 100%);
+    color: #8a2f58;
+}
+
 @media (max-width: 768px) {
     .search-form-sakura .input-group {
         flex-direction: column;
@@ -1654,82 +1756,66 @@ body::before {
         0 0 15px var(--sakura-rose);
 }
 
-:root {
-    --star-fill-light: var(--sakura-soft, #fff4cc); 
-}
-.star-rating,
-.star-rating-detailed {
-    display: inline-flex;
-    align-items: center;
-    gap: 4px; 
-}
-
-.star-rating-detailed {
-    gap: 2px;
-}
-
-.star-rating,
-.star-rating-detailed {
-    display: inline-flex;
-    align-items: center;
-    gap: 4px; 
-}
-
-.star-rating-detailed {
-    gap: 2px;
-}
-
 .star {
-    color: var(--sakura-soft, #fff4cc);
-    font-size: 1.2rem;
-    transition: color 0.3s ease;
-    position: relative;
-    font-weight: 900; 
-    text-shadow: none; 
-}
-
-.star-rating-detailed .star {
-    font-size: 1.5rem;
+    font-weight: 900 !important;
+    font-size: 1.35rem !important;
+    line-height: 1 !important;
+    display: inline-block !important;
+    color: #ffc9b2 !important;
+    text-shadow: 0 0 4px rgba(255, 180, 150, 0.5) !important;
 }
 
 .star.filled {
-    color: var(--sakura-gold, #b48a00); 
-    text-shadow: none;
+    color: #f5c400 !important;
+    text-shadow: 0 0 10px rgba(255, 206, 43, 0.9) !important;
 }
 
 .star.half {
-    position: relative;
-    color: var(--sakura-soft, #fff4cc);
+    color: #ffc9b2 !important;
+    position: relative !important;
 }
 
 .star.half::before {
-    content: '★';
-    position: absolute;
-    left: 0;
-    width: 50%;
-    overflow: hidden;
-    color: var(--sakura-gold, #b48a00); 
-    text-shadow: none;
+    content: "★" !important;
+    position: absolute !important;
+    left: 0 !important;
+    width: 50% !important;
+    overflow: hidden !important;
+    color: #675300 !important;
+    text-shadow: 0 0 10px rgba(255, 206, 43, 0.9) !important;
+    z-index: 2 !important;
+}
+
+
+.star-rating,
+.star-rating-detailed {
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 4px !important;
 }
 
 .rating-chip {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    background: rgba(255, 255, 255, 0.96);
-    border: 1px solid var(--sakura-soft, #e6d4ff);
-    border-radius: 14px;
-    padding: 8px 12px;
-    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.18);
-    backdrop-filter: blur(6px);
-}
+    background: linear-gradient(135deg,
+        rgba(255, 255, 255, 0.94),
+        rgba(255, 239, 245, 0.9)
+    ) !important;
 
-.rating-chip .star {
-    color: var(--sakura-gold, #b48a00);
-    text-shadow: none;
+    border: 1px solid rgba(251, 213, 229, 0.7) !important;
+    border-radius: 16px !important;
+    padding: 6px 12px !important;
+
+    box-shadow: 
+        0 8px 20px rgba(157, 36, 73, 0.12),
+        0 4px 8px rgba(0, 0, 0, 0.05) !important;
+
+    backdrop-filter: blur(10px) !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 6px !important;
 }
 
 .rating-chip small {
-    color: var(--sakura-deep, #5a2d8a) !important;
-    font-weight: 600;
+    font-weight: 600 !important;
+    font-size: 1rem !important;
+    color: var(--sakura-deep, #a3004a) !important;
 }
