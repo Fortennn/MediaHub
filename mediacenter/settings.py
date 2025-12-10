@@ -7,7 +7,7 @@ SECRET_KEY = 'your-secret-key-here'
 
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ["Fortennn.pythonanywhere.com"]
 
 INSTALLED_APPS = [
     'jet.dashboard',
