@@ -233,13 +233,45 @@ def profile(request):
     
     ratings = Rating.objects.filter(
         user=request.user
-    ).select_related('media_item')
+    ).select_related('media_item').order_by('-created_at')
+
+    status_counts = [
+        {
+            'value': value,
+            'label': label,
+            'count': watchlist_items.filter(status=value).count()
+        }
+        for value, label in Watchlist.Status.choices
+    ]
+
+    type_labels = {
+        'movie': 'Фільми',
+        'series': 'Серіали',
+        'anime': 'Аніме',
+    }
+    type_counts = [
+        {
+            'value': key,
+            'label': type_labels.get(key, key),
+            'count': watchlist_items.filter(media_item__media_type=key).count()
+        }
+        for key in ['movie', 'series', 'anime']
+    ]
+
+    recent_comments = ratings.exclude(
+        comment__isnull=True
+    ).exclude(
+        comment__exact=''
+    )[:3]
     
     context = {
         'watchlist_count': watchlist_items.count(),
         'rating_count': ratings.count(),
         'latest_watchlist': watchlist_items[:5],
         'recent_ratings': ratings[:5],
+        'recent_comments': recent_comments,
+        'status_counts': status_counts,
+        'type_counts': type_counts,
         'profile': profile_obj,
         'profile_form': form,
     }
@@ -399,6 +431,13 @@ def register(request):
             return redirect('register')
     
     return render(request, 'registration/register.html')
+
+
+def custom_404(request, exception=None):
+    """Custom 404 page."""
+    response = render(request, '404.html', status=404)
+    response.status_code = 404
+    return response
 
 def media_list(request):
     media_type = request.GET.get('type', 'all')

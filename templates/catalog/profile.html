@@ -65,6 +65,30 @@
                 </div>
 
                 <div class="border-top border-sakura-soft pt-4">
+                    <h4 class="text-sakura-deep mb-3">Статистика списку</h4>
+                    <div class="row g-3">
+                        {% for stat in status_counts %}
+                        <div class="col-6 col-md-4">
+                            <div class="stat-card stat-compact text-center h-100">
+                                <p class="stat-label mb-1">{{ stat.label }}</p>
+                                <h3 class="stat-number mb-1">{{ stat.count }}</h3>
+                                <p class="stat-sub small mb-0">у списку</p>
+                            </div>
+                        </div>
+                        {% endfor %}
+                        {% for t in type_counts %}
+                        <div class="col-6 col-md-4">
+                            <div class="stat-card stat-compact text-center h-100">
+                                <p class="stat-label mb-1">{{ t.label }}</p>
+                                <h3 class="stat-number mb-1">{{ t.count }}</h3>
+                                <p class="stat-sub small mb-0">додано</p>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <div class="border-top border-sakura-soft pt-4">
                     <h4 class="text-sakura-deep mb-3">Остання активність</h4>
                     <div class="row g-3">
                         <div class="col-md-6">
@@ -104,6 +128,28 @@
                             </div>
                             {% else %}
                             <p class="mb-0 text-sakura-deep opacity-75">Ще немає оцінок.</p>
+                            {% endif %}
+                        </div>
+
+                        <div class="col-12">
+                            <h6 class="content-card__eyebrow text-start mb-2">Останні коментарі:</h6>
+                            {% if recent_comments %}
+                            <div class="list-group rounded-4 overflow-hidden shadow-sm">
+                                {% for comment in recent_comments %}
+                                <div class="list-group-item d-flex flex-column flex-sm-row justify-content-between align-items-start align-items-sm-center">
+                                    <div class="mb-2 mb-sm-0">
+                                        <div class="fw-semibold text-sakura-deep">{{ comment.media_item.title }}</div>
+                                        <div class="small text-sakura-deep opacity-75">{{ comment.created_at|date:"d.m.Y" }}</div>
+                                        <div class="small text-sakura-deep mt-1">{{ comment.comment|truncatechars:120 }}</div>
+                                    </div>
+                                    <div class="ms-sm-3">
+                                        <a href="{% url 'media_detail' comment.media_item.pk %}" class="btn btn-sakura-ghost btn-sm">Детальніше</a>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                            {% else %}
+                            <p class="mb-0 text-sakura-deep opacity-75">Ще немає коментарів.</p>
                             {% endif %}
                         </div>
                     </div>

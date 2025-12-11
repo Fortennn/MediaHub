@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block title %}Сторінку не знайдено{% endblock %}
+{% block content %}
+<section class="py-5 mt-5">
+    <div class="container text-center" style="max-width: 720px;">
+        <div class="display-1 text-sakura-soft mb-3">404</div>
+        <h1 class="text-sakura-deep mb-3">Сторінку не знайдено</h1>
+        <p class="text-sakura-deep opacity-75 mb-4">
+            Здається, пелюстки занесли вас не туди. Перевірте адресу або поверніться на головну.
+        </p>
+        <div class="d-flex flex-column flex-sm-row gap-2 justify-content-center">
+            <a class="btn btn-sakura-primary" href="{% url 'home' %}">На головну</a>
+            <a class="btn btn-sakura-ghost" href="{% url 'media_list' %}">До каталогу</a>
+        </div>
+    </div>
+</section>
+{% endblock %}
