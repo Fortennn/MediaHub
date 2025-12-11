@@ -1,13 +1,17 @@
 import os
 from pathlib import Path
+from dotenv import load_dotenv
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+load_dotenv(os.path.join(BASE_DIR, '.env'))
+
+SOCIAL_AUTH_GOOGLE_OAUTH2_KEY = os.environ.get("GOOGLE_OAUTH_CLIENT_ID")
+SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET = os.environ.get("GOOGLE_OAUTH_CLIENT_SECRET")
 SECRET_KEY = os.environ.get("DJANGO_SECRET_KEY")
+DEBUG = os.environ.get("DEBUG") == "True"
 
-DEBUG = True
-
-ALLOWED_HOSTS = ["fortennn.pythonanywhere.com", "127.0.0.1:8000", "127.0.0.1"]
+ALLOWED_HOSTS = ["fortenn.pythonanywhere.com", "127.0.0.1:8000", "127.0.0.1"]
 
 INSTALLED_APPS = [
     'jet.dashboard',
