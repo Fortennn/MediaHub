@@ -2,6 +2,7 @@ from django import forms
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from django.contrib.auth import get_user_model
 from .models import Rating, MediaItem, Profile
+from django.core.exceptions import ValidationError
 
 
 class CustomUserCreationForm(UserCreationForm):
@@ -77,3 +78,29 @@ class ProfileForm(forms.ModelForm):
                 'accept': 'image/*'
             })
         }
+
+
+class UserProfileForm(forms.ModelForm):
+    class Meta:
+        model = get_user_model()
+        fields = ['username']
+        widgets = {
+            'username': forms.TextInput(attrs={
+                'class': 'form-control input-sakura',
+                'placeholder': 'Новий нікнейм'
+            })
+        }
+        labels = {
+            'username': 'Нікнейм'
+        }
+
+    def clean_username(self):
+        username = self.cleaned_data.get('username', '').strip()
+        if not username:
+            raise ValidationError('Нікнейм не може бути порожнім.')
+        # Ensure unique (case-insensitive)
+        UserModel = get_user_model()
+        existing = UserModel.objects.filter(username__iexact=username).exclude(pk=self.instance.pk)
+        if existing.exists():
+            raise ValidationError('Такий нікнейм вже використовується.')
+        return username

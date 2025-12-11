@@ -11,12 +11,12 @@
                     <div class="text-center mb-5">
                         <a href="{% url 'home' %}" class="auth-logo text-decoration-none">Sakura Media</a>
                         <h1 class="auth-title mt-3">Вхід</h1>
-                        <p class="text-sakura-deep opacity-75">Увійдіть, щоб зберігати перегляди й оцінки!</p>
+                        <p class="text-sakura-deep opacity-75">Раді вас бачити! Увійдіть, щоб продовжити перегляд.</p>
                     </div>
                     
                     {% if form.errors %}
                     <div class="alert alert-sakura mb-4">
-                        Перевірте логін/email і пароль та спробуйте ще раз.
+                        Перевірте правильність логіну/email та пароля.
                     </div>
                     {% endif %}
                     
@@ -30,14 +30,19 @@
                         
                         <div class="mb-5">
                             <label class="form-label text-sakura-deep mb-2">Пароль</label>
-                            <input type="password" name="password" class="form-control input-auth" placeholder="Ваш пароль" required>
+                            <input type="password" name="password" class="form-control input-auth" placeholder="Введіть пароль" required>
                         </div>
                         
                         <button type="submit" class="auth-button mb-4">Увійти</button>
+
+                        <div class="text-center mb-3 text-sakura-deep opacity-75">Або увійдіть через Google</div>
+                        <a class="btn btn-outline-dark w-100 mb-2" href="{% url 'social:begin' 'google-oauth2' %}{% if request.GET.next %}?next={{ request.GET.next|urlencode }}{% endif %}">
+                            <span class="me-2">G</span>Увійти з Google
+                        </a>
                         
                         <div class="text-center">
                             <p class="text-sakura-deep opacity-75 mb-0">
-                                Ще немає акаунта? 
+                                Ще не маєте акаунта? 
                                 <a href="{% url 'register' %}" class="text-sakura-rose text-decoration-none">Зареєструватися</a>
                             </p>
                         </div>

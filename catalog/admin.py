@@ -1,6 +1,9 @@
+from django import forms
 from django.contrib import admin
+from django.contrib.auth import get_user_model
+from django.contrib.auth.admin import UserAdmin as DjangoUserAdmin
 from django.utils.html import format_html
-from .models import Genre, MediaItem, Season, Rating, Watchlist
+from .models import Genre, MediaItem, Season, Rating, Watchlist, Profile
 
 
 @admin.register(Genre)
@@ -64,3 +67,57 @@ class RatingAdmin(admin.ModelAdmin):
 class WatchlistAdmin(admin.ModelAdmin):
     list_display = ['user', 'media_item', 'added_at']
     list_filter = ['added_at']
+
+
+User = get_user_model()
+
+
+class UserAdminForm(DjangoUserAdmin.form):
+    avatar = forms.ImageField(required=False, label="Avatar")
+
+    class Meta(DjangoUserAdmin.form.Meta):
+        model = User
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if self.instance.pk and hasattr(self.instance, 'profile') and self.instance.profile.avatar:
+            self.fields['avatar'].initial = self.instance.profile.avatar
+
+    def save(self, commit=True):
+        user = super().save(commit)
+        avatar = self.cleaned_data.get('avatar')
+        if not hasattr(user, 'profile'):
+            Profile.objects.get_or_create(user=user)
+        profile = user.profile
+        if avatar is False:
+            # Clear existing avatar
+            if profile.avatar:
+                profile.avatar.delete(save=False)
+                profile.avatar = ''
+                profile.save(update_fields=['avatar'])
+        elif avatar:
+            profile.avatar = avatar
+            profile.save()
+        return user
+
+
+admin.site.unregister(User)
+
+
+@admin.register(User)
+class UserAdmin(DjangoUserAdmin):
+    form = UserAdminForm
+    list_display = DjangoUserAdmin.list_display + ('avatar_preview',)
+    list_select_related = ('profile',)
+    fieldsets = DjangoUserAdmin.fieldsets + (
+        ('Profile', {'fields': ('avatar',)}),
+    )
+
+    def avatar_preview(self, obj):
+        if hasattr(obj, 'profile') and obj.profile.avatar:
+            return format_html(
+                '<img src="{}" width="40" height="40" style="object-fit:cover;border-radius:50%;" />',
+                obj.profile.avatar.url
+            )
+        return "—"
+    avatar_preview.short_description = "Avatar"

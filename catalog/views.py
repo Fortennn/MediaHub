@@ -8,7 +8,7 @@ from django.http import JsonResponse
 from django.urls import reverse
 from django.utils.http import url_has_allowed_host_and_scheme
 from .models import MediaItem, Genre, Rating, Watchlist, Profile
-from .forms import CustomUserCreationForm, RatingForm, ProfileForm
+from .forms import CustomUserCreationForm, RatingForm, ProfileForm, UserProfileForm
 
 def _matches_media_item(item, query_cf):
     """Case-insensitive (Unicode) match across title/original_title/description using Python casefold."""
@@ -219,13 +219,25 @@ def toggle_watchlist(request, pk):
 def profile(request):
     profile_obj, _ = Profile.objects.get_or_create(user=request.user)
     if request.method == 'POST':
-        form = ProfileForm(request.POST, request.FILES, instance=profile_obj)
-        if form.is_valid():
-            form.save()
-            messages.success(request, 'Аватар оновлено.')
-            return redirect('profile')
+        profile_form = ProfileForm(request.POST, request.FILES, instance=profile_obj)
+        user_form = UserProfileForm(request.POST, instance=request.user)
+
+        if 'username' in request.POST:
+            if user_form.is_valid():
+                user_form.save()
+                messages.success(request, 'Нікнейм оновлено.')
+                return redirect('profile')
+        elif request.FILES.get('avatar'):
+            if profile_form.is_valid():
+                profile_form.save()
+                messages.success(request, 'Аватар оновлено.')
+                return redirect('profile')
+            user_form = UserProfileForm(instance=request.user)
+        else:
+            pass
     else:
-        form = ProfileForm(instance=profile_obj)
+        profile_form = ProfileForm(instance=profile_obj)
+        user_form = UserProfileForm(instance=request.user)
 
     watchlist_items = Watchlist.objects.filter(
         user=request.user
@@ -273,7 +285,8 @@ def profile(request):
         'status_counts': status_counts,
         'type_counts': type_counts,
         'profile': profile_obj,
-        'profile_form': form,
+        'profile_form': profile_form,
+        'user_form': user_form,
     }
     
     return render(request, 'catalog/profile.html', context)

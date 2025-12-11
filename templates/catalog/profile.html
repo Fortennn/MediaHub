@@ -1,4 +1,4 @@
-﻿{% extends 'base.html' %}
+{% extends 'base.html' %}
 {% load widget_tweaks %}
 
 {% block title %}Профіль | Sakura Media{% endblock %}
@@ -24,7 +24,15 @@
                             <span class="text-sakura-deep fw-bold fs-2">{{ user.username|first|upper }}</span>
                         {% endif %}
                     </div>
-                    <h2 class="auth-title mb-1">{{ user.username }}</h2>
+                    <h2 class="auth-title mb-1 d-flex align-items-center gap-2 flex-wrap justify-content-center">
+                        {{ user.username }}
+                        <button class="btn btn-sakura-soft btn-sm px-2 py-1 d-inline-flex align-items-center justify-content-center" style="font-size: 0.85rem; border-radius: 999px;" type="button" data-bs-toggle="modal" data-bs-target="#nicknameModal" aria-label="Edit nickname">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                                <path d="M4 20h4.586a2 2 0 0 0 1.414-.586l9.414-9.414a2 2 0 0 0 0-2.828l-1.586-1.586a2 2 0 0 0-2.828 0L5.586 15a2 2 0 0 0-.586 1.414V20z" stroke="#b22453" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+                                <path d="m13 6 5 5" stroke="#b22453" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                        </button>
+                    </h2>
                     <p class="text-sakura-deep opacity-75 mb-0">З нами від {{ user.date_joined|date:"d.m.Y" }}</p>
                 </div>
 
@@ -92,7 +100,7 @@
                     <h4 class="text-sakura-deep mb-3">Остання активність</h4>
                     <div class="row g-3">
                         <div class="col-md-6">
-                            <h6 class="content-card__eyebrow text-start mb-2">Недавні у списку: 
+                            <h6 class="content-card__eyebrow text-start mb-2">Недавнє у списку: 
                                 <a class="text-sakura-rose text-decoration-none small ms-2" href="{% url 'user_watchlist' %}">Увесь список</a>
                             </h6>
                             {% if latest_watchlist %}
@@ -182,6 +190,41 @@
                 }
             });
         }
+
+        {% if user_form.errors %}
+        const nicknameModal = document.getElementById('nicknameModal');
+        if (nicknameModal) {
+            const modal = new bootstrap.Modal(nicknameModal);
+            modal.show();
+        }
+        {% endif %}
     });
 </script>
+
+<div class="modal fade" id="nicknameModal" tabindex="-1" aria-labelledby="nicknameModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="nicknameModalLabel">Змінити нікнейм</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <form method="POST">
+        {% csrf_token %}
+        <div class="modal-body">
+          <div class="mb-3">
+            <label class="form-label text-sakura-deep">Новий нікнейм</label>
+            {{ user_form.username|add_class:"form-control input-auth" }}
+            {% if user_form.username.errors %}
+              <div class="text-danger small mt-1">{{ user_form.username.errors|striptags }}</div>
+            {% endif %}
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-sakura-soft" data-bs-dismiss="modal">Скасувати</button>
+          <button type="submit" class="btn btn-sakura-primary">Зберегти</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
 {% endblock %}

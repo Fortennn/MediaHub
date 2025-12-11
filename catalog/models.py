@@ -5,6 +5,7 @@ from django.db.models.signals import post_save
 from django.dispatch import receiver
 import os
 import uuid
+from django.core.files.storage import default_storage
 
 def avatar_upload_path(instance, filename):
     ext = filename.split('.')[-1]
@@ -121,3 +122,18 @@ def create_user_profile(sender, instance, created, **kwargs):
 def save_user_profile(sender, instance, **kwargs):
     if hasattr(instance, 'profile'):
         instance.profile.save()
+
+
+@receiver(models.signals.pre_save, sender=Profile)
+def delete_old_avatar_on_change(sender, instance, **kwargs):
+    """Remove previous avatar file when a new one is set."""
+    if not instance.pk:
+        return
+    try:
+        old_avatar = Profile.objects.get(pk=instance.pk).avatar
+    except Profile.DoesNotExist:
+        return
+    new_avatar = instance.avatar
+    if old_avatar and new_avatar and old_avatar.name != new_avatar.name:
+        if default_storage.exists(old_avatar.name):
+            default_storage.delete(old_avatar.name)
