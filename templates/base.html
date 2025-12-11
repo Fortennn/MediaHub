@@ -170,6 +170,37 @@
             }
         });
         {% endif %}
+
+        (function() {
+            const navbar = document.querySelector('.navbar-sakura');
+            if (!navbar) return;
+
+            const mq = window.matchMedia('(max-width: 768px)');
+            let lastScroll = window.scrollY;
+            let ticking = false;
+
+            const update = () => {
+                const current = window.scrollY;
+                const delta = current - lastScroll;
+
+                if (current > 80 && delta > 2) {
+                    navbar.classList.add('navbar-hidden');
+                } else if (delta < -2 || current < 50) {
+                    navbar.classList.remove('navbar-hidden');
+                }
+
+                lastScroll = current;
+                ticking = false;
+            };
+
+            window.addEventListener('scroll', () => {
+                if (!mq.matches) return;
+                if (!ticking) {
+                    window.requestAnimationFrame(update);
+                    ticking = true;
+                }
+            });
+        })();
     </script>
 
     {% if user.is_authenticated and request.resolver_match.url_name == 'home' %}

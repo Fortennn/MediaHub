@@ -103,7 +103,7 @@
                 {% endif %}
                 
                 {% if media.trailer_url %}
-                <a href="{{ media.trailer_url }}" target="_blank" class="btn btn-sakura-primary w-100">
+                <a href="{{ media.trailer_url }}" target="_blank" class="btn btn-sakura-primary w-100 trailer-btn">
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="me-2" viewBox="0 0 16 16">
                         <path d="M6.79 5.093A.5.5 0 0 0 6 5.5v5a.5.5 0 0 0 .79.407l3.5-2.5a.5.5 0 0 0 0-.814z"/>
                         <path d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8m15 0A7 7 0 1 0 1 8a7 7 0 0 0 14 0"/>
@@ -115,7 +115,7 @@
         </div>
         
         <div class="col-lg-8">
-            <div class="mb-4">
+            <div class="mb-4 media-title-block">
                 <h1 class="text-sakura-deep mb-2">{{ media.title }}</h1>
                 {% if media.original_title %}
                 <h5 class="text-sakura-rose mb-4">{{ media.original_title }}</h5>

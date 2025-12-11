@@ -17,9 +17,12 @@
         <div class="search-form-sakura mb-5">
             <form method="GET" action="{% url 'search' %}">
                 <div class="input-group">
-                    <input type="text" name="q" class="form-control search-input-sakura" 
+                    <input type="search" name="q" class="form-control search-input-sakura" 
                            placeholder="Введіть назву фільму, серіалу чи аніме..." 
-                           value="{{ query }}">
+                           value="{{ query }}"
+                           inputmode="search"
+                           autocomplete="off"
+                           data-suggestions-url="{% url 'search_suggestions' %}">
                     <button type="submit" class="btn search-button-sakura">Пошук</button>
                 </div>
             </form>
@@ -109,4 +112,9 @@
         </div>
     {% endif %}
 </div>
+{% endblock %}
+
+{% block extra_js %}
+{% load static %}
+<script src="{% static 'js/search_suggestions.js' %}"></script>
 {% endblock %}

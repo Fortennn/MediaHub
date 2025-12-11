@@ -4,10 +4,16 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.db.models import Q, Avg, Count, Sum
 from django.core.paginator import Paginator
+from django.http import JsonResponse
 from django.urls import reverse
 from django.utils.http import url_has_allowed_host_and_scheme
 from .models import MediaItem, Genre, Rating, Watchlist, Profile
 from .forms import CustomUserCreationForm, RatingForm, ProfileForm
+
+def _matches_media_item(item, query_cf):
+    """Case-insensitive (Unicode) match across title/original_title/description using Python casefold."""
+    fields = [item.title, item.original_title, item.description]
+    return any(query_cf in (value or '').casefold() for value in fields)
 
 def home(request):
     latest_movies = MediaItem.objects.filter(
@@ -285,22 +291,25 @@ def user_watchlist(request):
     else:
         media_type_filter = 'all'
 
-    if search_query:
-        filtered_watchlist = filtered_watchlist.filter(
-            Q(media_item__title__icontains=search_query) |
-            Q(media_item__original_title__icontains=search_query)
-        )
-
-    total_watchlist_count = filtered_watchlist.count()
-
     valid_statuses = {choice[0] for choice in Watchlist.Status.choices}
     if status_filter in valid_statuses:
         filtered_watchlist = filtered_watchlist.filter(status=status_filter)
     else:
         status_filter = 'all'
 
+    filtered_watchlist_list = list(filtered_watchlist)
+
+    if search_query:
+        query_cf = search_query.casefold()
+        filtered_watchlist_list = [
+            item for item in filtered_watchlist_list
+            if _matches_media_item(item.media_item, query_cf)
+        ]
+
+    total_watchlist_count = len(filtered_watchlist_list)
+
     return render(request, 'catalog/watchlist.html', {
-        'watchlist': filtered_watchlist,
+        'watchlist': filtered_watchlist_list,
         'search_query': search_query,
         'status_filter': status_filter,
         'media_type_filter': media_type_filter,
@@ -314,17 +323,49 @@ def search(request):
     results = []
     
     if query:
-        results = MediaItem.objects.filter(
-            Q(title__icontains=query) |
-            Q(original_title__icontains=query) |
-            Q(description__icontains=query),
-            is_published=True
-        ).select_related().prefetch_related('genres').order_by('-created_at')
+        query_cf = query.casefold()
+        base_items = MediaItem.objects.filter(is_published=True).select_related().prefetch_related('genres').order_by('-created_at')
+        results = [item for item in base_items if _matches_media_item(item, query_cf)]
     
     return render(request, 'catalog/search.html', {
         'query': query,
         'results': results
     })
+
+def search_suggestions(request):
+    query = request.GET.get('q', '').strip()
+    suggestions = []
+
+    if query:
+        query_cf = query.casefold()
+        base_qs = (
+            MediaItem.objects.filter(is_published=True)
+            .annotate(avg_rating=Avg('ratings__score'))
+            .order_by('-created_at')
+        )[:50]
+
+        matches = [
+            item for item in base_qs
+            if _matches_media_item(item, query_cf)
+        ][:8]
+
+        suggestions = [
+            {
+                'id': item.pk,
+                'title': item.title,
+                'type': item.media_type,
+                'type_label': item.get_media_type_display(),
+                'release_year': item.release_year,
+                'avg_rating': item.avg_rating or 0,
+                'url': reverse('media_detail', args=[item.pk]),
+                'poster': item.poster.url if item.poster else None,
+            }
+            for item in matches
+        ]
+
+    return JsonResponse({'results': suggestions})
+
+
 
 from django.contrib.auth import login, authenticate
 from django.contrib.auth.models import User
@@ -363,16 +404,9 @@ def media_list(request):
     media_type = request.GET.get('type', 'all')
     genre_slug = request.GET.get('genre')
     sort_by = request.GET.get('sort', '-created_at')
-    search_query = request.GET.get('q', '')
+    search_query = request.GET.get('q', '').strip()
     
     items = MediaItem.objects.filter(is_published=True)
-    
-    if search_query:
-        items = items.filter(
-            Q(title__icontains=search_query) |
-            Q(original_title__icontains=search_query) |
-            Q(description__icontains=search_query)
-        )
     
     if media_type != 'all':
         items = items.filter(media_type=media_type)
@@ -393,6 +427,12 @@ def media_list(request):
     if sort_by in valid_sorts:
         items = items.order_by(sort_by)
     
+    if search_query:
+        query_cf = search_query.casefold()
+        items_list = [item for item in items if _matches_media_item(item, query_cf)]
+    else:
+        items_list = list(items)
+    
     genres = Genre.objects.all()
     
     user_watchlist = []
@@ -401,7 +441,7 @@ def media_list(request):
             user=request.user
         ).values_list('media_item_id', flat=True)
 
-    paginator = Paginator(items, 12)
+    paginator = Paginator(items_list, 12)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
     

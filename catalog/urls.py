@@ -15,6 +15,7 @@ urlpatterns = [
     path('watchlist/', views.user_watchlist, name='user_watchlist'),
     path('comments/', views.user_comments, name='user_comments'),
     path('search/', views.search, name='search'),
+    path('search/suggestions/', views.search_suggestions, name='search_suggestions'),
     path('register/', views.register, name='register'),
     path('login/', auth_views.LoginView.as_view(
         template_name='registration/login.html',

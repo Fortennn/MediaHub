@@ -21,9 +21,12 @@
         <div class="search-form-sakura mb-5">
             <form method="GET" action="{% url 'media_list' %}">
                 <div class="input-group">
-                    <input type="text" name="q" class="form-control search-input-sakura" 
+                    <input type="search" name="q" class="form-control search-input-sakura" 
                            placeholder="Введіть назву чи частину назви..." 
-                           value="{{ request.GET.q }}">
+                           value="{{ request.GET.q }}"
+                           inputmode="search"
+                           autocomplete="off"
+                           data-suggestions-url="{% url 'search_suggestions' %}">
                     {% if current_type != 'all' %}
                     <input type="hidden" name="type" value="{{ current_type }}">
                     {% endif %}
@@ -215,5 +218,6 @@
 {% endblock %}
 {% block extra_js %}
 {% load static %}
+<script src="{% static 'js/search_suggestions.js' %}"></script>
 <script src="{% static 'js/star_ratingv2.js' %}"></script>
 {% endblock %}

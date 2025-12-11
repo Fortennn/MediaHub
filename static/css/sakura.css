@@ -62,6 +62,11 @@ body::before {
     backdrop-filter: blur(10px);
     border-bottom: 1px solid var(--sakura-soft);
     box-shadow: 0 4px 30px var(--sakura-shadow);
+    transition: transform 0.3s ease, background-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.navbar-sakura.navbar-hidden {
+    transform: translateY(-120%);
 }
 
 .navbar-layout {
@@ -1038,6 +1043,8 @@ body::before {
     max-width: 700px;
     margin: 0 auto 60px;
     position: relative;
+    z-index: 15;
+    pointer-events: auto;
 }
 
 .search-form-sakura .input-group {
@@ -1046,11 +1053,14 @@ body::before {
     flex-direction: row;
     align-items: stretch;
     gap: 0;
-    border-radius: 50px;
-    background: rgba(255, 255, 255, 0.98);
-    border: 2px solid var(--sakura-soft);
+    border-radius: 24px;
+    background: #fff;
+    border: 1px solid var(--sakura-soft);
     overflow: hidden;
-    box-shadow: 0 12px 30px rgba(157, 36, 73, 0.08);
+    box-shadow: 0 10px 26px rgba(157, 36, 73, 0.08);
+    position: relative;
+    isolation: isolate;
+    pointer-events: auto;
 }
 
 .search-input-sakura {
@@ -1063,12 +1073,126 @@ body::before {
     transition: all 0.3s ease;
     width: 100%;
     box-sizing: border-box;
+    position: relative;
+    z-index: 2;
+    pointer-events: auto;
+    min-height: 54px;
 }
 
 .search-input-sakura:focus {
     outline: none;
     border-color: var(--sakura-rose);
     box-shadow: 0 15px 40px rgba(247, 168, 196, 0.2);
+}
+
+.search-suggestions {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    margin-top: 10px;
+    background: #ffffff;
+    border: 1px solid var(--sakura-soft);
+    border-radius: 18px;
+    box-shadow: 0 18px 40px rgba(157, 36, 73, 0.12);
+    padding: 8px;
+    display: none;
+    z-index: 40;
+    max-height: 360px;
+    overflow-y: auto;
+    width: 100%;
+    min-width: 280px;
+    backdrop-filter: blur(4px);
+    pointer-events: none;
+    touch-action: manipulation;
+}
+
+.search-suggestions.show {
+    display: block;
+    pointer-events: auto;
+}
+
+.search-suggestions.mobile {
+    position: static;
+    margin-top: 12px;
+    max-height: 320px;
+    min-width: 0;
+    box-shadow: 0 10px 24px rgba(157, 36, 73, 0.08);
+}
+
+.search-suggestion-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 12px;
+    border-radius: 12px;
+    text-decoration: none;
+    color: var(--sakura-deep);
+    transition: background-color 0.2s ease, transform 0.2s ease;
+}
+
+.search-suggestion-item:hover {
+    background: var(--sakura-light);
+    transform: translateY(-1px);
+}
+
+.suggestion-thumb {
+    width: 56px;
+    height: 74px;
+    border-radius: 12px;
+    overflow: hidden;
+    background: var(--sakura-light);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--sakura-rose);
+    font-weight: 700;
+    font-size: 0.95rem;
+    flex-shrink: 0;
+}
+
+.suggestion-thumb img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.suggestion-body {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    overflow: hidden;
+}
+
+.suggestion-title {
+    font-weight: 600;
+    color: var(--sakura-deep);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.suggestion-meta {
+    font-size: 0.9rem;
+    color: rgba(26, 11, 13, 0.7);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.suggestion-meta .dot {
+    color: var(--sakura-rose);
+    font-weight: 600;
+}
+
+.search-suggestion-empty {
+    padding: 14px 12px;
+    color: rgba(26, 11, 13, 0.7);
+    text-align: center;
+    font-weight: 600;
+    background: var(--sakura-light);
+    border-radius: 12px;
 }
 
 .search-button-sakura {
@@ -1080,8 +1204,8 @@ body::before {
     background: linear-gradient(135deg, var(--sakura-rose), var(--sakura-deep));
     color: var(--sakura-white);
     border: none;
-    border-radius: 0 50px 50px 0;
-    padding: 18px 30px;
+    border-radius: 0 24px 24px 0;
+    padding: 16px 24px;
     font-weight: 600;
     transition: all 0.3s ease;
     display: inline-flex;
@@ -1089,6 +1213,8 @@ body::before {
     justify-content: center;
     height: 100%;
     box-shadow: 0 10px 30px rgba(247, 168, 196, 0.25);
+    pointer-events: auto;
+    z-index: 2;
 }
 
 .search-button-sakura:hover {
@@ -1152,7 +1278,7 @@ html {
     gap: 0;
     width: 100%;
     border: 1px solid #d65c8c;
-    border-radius: 999px;
+    border-radius: 16px;
     overflow: hidden;
     background: linear-gradient(135deg, #fff7fb 0%, #ffeaf4 100%);
     box-shadow: 0 10px 22px rgba(214, 92, 140, 0.12);
@@ -1198,21 +1324,119 @@ html {
 }
 
 @media (max-width: 768px) {
-    .search-form-sakura .input-group {
-        flex-direction: column;
+    .media-info-card,
+    .poster-frame,
+    .watchlist-combo,
+    .season-summary,
+    .badge-sakura,
+    .review-card,
+    .summary-pill {
+        text-align: center;
+    }
+
+    .watchlist-control {
+        grid-template-columns: 1fr;
+    }
+
+    .watchlist-control .watchlist-select,
+    .watchlist-control .btn {
+        border-radius: 0;
+        width: 100%;
+    }
+
+    .season-summary {
+        justify-content: center;
+    }
+
+    .poster-frame img {
+        max-width: 240px;
+        border-radius: 18px;
+    }
+
+.trailer-btn,
+.btn.btn-sakura-primary,
+.btn.btn-sakura-ghost {
+    width: 100%;
+    justify-content: center;
+    margin-bottom: 18px;
+}
+
+    .badge-sakura {
+        display: inline-flex;
+        justify-content: center;
+    }
+
+    .summary-pill {
+        min-width: 120px;
+        margin-left: auto;
+        margin-right: auto;
+    }
+
+    .media-detail-header,
+    .media-detail-genres {
+        text-align: center;
+    }
+
+    .review-card .d-flex.flex-wrap.gap-2.mt-3 {
+        flex-wrap: nowrap !important;
+        flex-direction: row;
+        justify-content: center;
         gap: 12px;
     }
 
+    .review-card .d-flex.flex-wrap.gap-2.mt-3 .btn {
+        flex: 1 1 45%;
+        min-width: 120px;
+        text-align: center;
+    }
+
+    .search-form-sakura {
+        margin-bottom: 30px;
+        max-width: 100%;
+    }
+
+    .search-form-sakura .input-group {
+        display: grid;
+        grid-template-columns: 1fr 130px;
+        gap: 0;
+        height: auto !important;
+        overflow: hidden;
+        border-radius: 22px;
+        border: 1px solid var(--sakura-soft);
+    }
+
     .search-input-sakura {
-        border-radius: 50px;
-        padding: 16px 22px;
+        width: 100% !important; 
+        box-sizing: border-box !important;
+        border-radius: 0;
+        padding: 14px 16px;
+        min-height: 50px;
     }
 
     .search-button-sakura {
-        width: 100%;
-        border-radius: 50px;
-        padding: 14px 26px;
+        width: auto;
+        border-radius: 0;
+        padding: 0 18px;
+        font-size: 0.95rem;
+        min-height: 50px;
+    }
+
+    .search-suggestion-item {
+        padding: 10px;
+        gap: 10px;
+    }
+
+    .suggestion-thumb {
+        width: 48px;
+        height: 62px;
+    }
+
+    .suggestion-title {
         font-size: 1rem;
+    }
+
+    .suggestion-meta {
+        font-size: 0.9rem;
     }
 }
 
@@ -1220,6 +1444,15 @@ html {
     .search-button-sakura {
         padding: 12px 22px;
         font-size: 0.95rem;
+    }
+
+    .search-input-sakura {
+        padding: 14px 18px;
+        font-size: 1rem;
+    }
+
+    .search-suggestions {
+        max-height: 260px;
     }
 }
 

@@ -11,8 +11,11 @@
             <div class="search-form-sakura w-100">
                 <form method="GET" action="{% url 'user_watchlist' %}" class="w-100">
                     <div class="input-group w-100">
-                        <input type="text" name="q" class="form-control search-input-sakura"
-                               placeholder="Знайти у списку..." value="{{ search_query }}">
+                        <input type="search" name="q" class="form-control search-input-sakura"
+                               placeholder="Знайти у списку..." value="{{ search_query }}"
+                               inputmode="search"
+                               autocomplete="off"
+                               data-suggestions-url="{% url 'search_suggestions' %}">
                         {% if status_filter and status_filter != 'all' %}
                         <input type="hidden" name="status" value="{{ status_filter }}">
                         {% endif %}
@@ -154,5 +157,6 @@
 {% endblock %}
 {% block extra_js %}
 {% load static %}
+<script src="{% static 'js/search_suggestions.js' %}"></script>
 <script src="{% static 'js/star_ratingv2.js' %}"></script>
 {% endblock %}
